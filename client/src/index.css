@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+/* ========== Custom Design Tokens (Dark Theme — Default) ========== */
+:root {
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --pro-color: #22c55e;
+  --pro-bg: rgba(34, 197, 94, 0.1);
+  --con-color: #ef4444;
+  --con-bg: rgba(239, 68, 68, 0.1);
+  --surface: rgba(30, 30, 60, 0.6);
+  --surface-hover: rgba(40, 40, 80, 0.7);
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 40%, #24243e 100%);
+}
+
+/* ========== Light Theme ========== */
+[data-theme="light"] {
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-dark: #4338ca;
+  --pro-color: #16a34a;
+  --pro-bg: rgba(22, 163, 74, 0.1);
+  --con-color: #dc2626;
+  --con-bg: rgba(220, 38, 38, 0.08);
+  --surface: rgba(255, 255, 255, 0.85);
+  --surface-hover: rgba(245, 245, 255, 0.9);
+  --border: rgba(0, 0, 0, 0.1);
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --bg-gradient: linear-gradient(135deg, #f0f4ff 0%, #e8ecf4 40%, #f5f5ff 100%);
+}
+
+/* ========== Base Styles ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ========== Glassmorphism Card ========== */
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-hover {
+  transition: all 0.3s ease;
+}
+.glass-hover:hover {
+  background: var(--surface-hover);
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+}
+
+/* ========== Buttons ========== */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 0.625rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: var(--primary-light);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+/* ========== Score Bar ========== */
+.score-bar-track {
+  width: 100%;
+  height: 12px;
+  background: var(--con-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pro-color), #4ade80);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== Animations ========== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-in {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+/* ========== Form Inputs ========== */
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 15, 40, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, background 0.3s ease;
+}
+
+[data-theme="light"] .input-field {
+  background: rgba(240, 240, 255, 0.8);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+.input-field::placeholder {
+  color: var(--text-muted);
+}
+
+textarea.input-field {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ========== Category Badges ========== */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+.badge-category {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+.badge-pro {
+  background: var(--pro-bg);
+  color: var(--pro-color);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.badge-con {
+  background: var(--con-bg);
+  color: var(--con-color);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.badge-tag {
+  background: rgba(168, 85, 247, 0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.badge-tag:hover {
+  background: rgba(168, 85, 247, 0.2);
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}

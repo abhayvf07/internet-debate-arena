@@ -1,0 +1,91 @@
+# ==============================
+# Logs
+# ==============================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==============================
+# Node modules
+# ==============================
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# ==============================
+# Build folders
+# ==============================
+dist/
+build/
+dist-ssr/
+client/dist/
+server/dist/
+
+# ==============================
+# Environment variables
+# ==============================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+
+# ==============================
+# Cache / temporary files
+# ==============================
+.cache/
+.tmp/
+.temp/
+
+# ==============================
+# OS files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Editor directories and files
+# ==============================
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==============================
+# Coverage & testing
+# ==============================
+coverage/
+
+# ==============================
+# Runtime data
+# ==============================
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==============================
+# Optional uploads folder
+# ==============================
+uploads/
+
+# ==============================
+# Redis / database dump files
+# ==============================
+dump.rdb
+*.rdb
+
+# ==============================
+# Optional logs folder (backend)
+# ==============================
+server/logs/
+client/logs/

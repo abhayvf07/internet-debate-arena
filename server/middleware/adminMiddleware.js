@@ -1,0 +1,13 @@
+/**
+ * Admin-only access guard
+ * Must be used AFTER the protect (auth) middleware
+ */
+const adminOnly = (req, res, next) => {
+    if (req.user && req.user.role === "admin") {
+        next();
+    } else {
+        res.status(403).json({ message: "Access denied — admin only" });
+    }
+};
+
+module.exports = { adminOnly };
