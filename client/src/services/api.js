@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: '/api',
+    baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Attach JWT token to every request if available
@@ -26,7 +26,7 @@ API.interceptors.response.use(
             try {
                 const user = JSON.parse(localStorage.getItem('user'));
                 if (user?.refreshToken) {
-                    const res = await axios.post('/api/auth/refresh-token', {
+                    const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh-token`, {
                         refreshToken: user.refreshToken,
                     });
 
