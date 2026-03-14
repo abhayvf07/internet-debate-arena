@@ -176,11 +176,11 @@ npm run dev
 
 ### Frontend
 
-Deploy using platforms like **Vercel or Netlify**.
+Deploy using platforms like **Vercel**.
 
 ### Backend
 
-Deploy using **Render / Railway / VPS**.
+Deploy using **Render**.
 
 Environment variables must be added in the hosting dashboard.
 
