@@ -213,31 +213,31 @@ Make sure to configure your environment variables in your hosting platform or lo
 
 ## 🏠 Home Page
 splays trending debates, categories, and latest discussions.
-Di<img width="1920" height="1080" alt="Home Page" src="https://github.com/user-attachments/assets/074fabf6-603b-4b48-8df1-2cc3aed9974b" />
+<img width="1920" height="923" alt="Home Page" src="https://github.com/user-attachments/assets/d8c68a19-d66a-4656-9d72-164bcfe7a977" />
 
 ## 🔐 Signup Page
 User registration with secure authentication.
-<img width="1920" height="1080" alt="Sign Up" src="https://github.com/user-attachments/assets/54b9985e-06e3-47df-a60f-f97f93a64a8c" />
+<img width="1920" height="919" alt="Sign Up" src="https://github.com/user-attachments/assets/fc4b03e4-1d54-4289-a92d-b79d18539e5e" />
 
 ## 🔑 Login Page
 Login system with JWT authentication.
-<img width="1920" height="1080" alt="Login" src="https://github.com/user-attachments/assets/5a5a0edb-ac9f-4fb8-90f2-ae9ff852bc7f" />
+<img width="1920" height="919" alt="Login" src="https://github.com/user-attachments/assets/717c94ca-6924-474a-b73c-c5c6ac2805fd" />
 
 ## 🗳️ Create Debate
 Users can create debates and choose Pro / Con topics.
-<img width="1920" height="1080" alt="Create_Debate" src="https://github.com/user-attachments/assets/4c596818-3638-45fc-95cc-40faf635955d" />
+<img width="1920" height="923" alt="Create_Debate" src="https://github.com/user-attachments/assets/a9fdd9e2-d680-4d41-b674-0454dfa75123" />
 
 ## 📊 Leaderboard
 Shows top contributors based on activity and engagement.
-<img width="1920" height="1080" alt="Leaderboard" src="https://github.com/user-attachments/assets/d2def8ba-a0cf-4a38-91d2-6eefe58fcbc5" />
+<img width="1920" height="910" alt="Leaderboard" src="https://github.com/user-attachments/assets/edd11ad3-dfab-4278-b494-0569b76e74b9" />
 
 ## 👤 User Profile
 Displays user information, debates, and contributions.
-<img width="1920" height="1080" alt="User_Portfolio" src="https://github.com/user-attachments/assets/bd40b67f-baff-4088-aee2-d70f8eea7786" />
+<img width="1920" height="904" alt="User_Portfolio" src="https://github.com/user-attachments/assets/3c9469f3-9e99-47d5-b8fe-1839a7f82888" />
 
 ## 🛡️ Admin Dashboard
 Admin panel for managing users, debates, and reports.
-<img width="1920" height="1080" alt="Admin_Dashboard" src="https://github.com/user-attachments/assets/b23caa4d-c715-4a5e-a314-136729ec39e5" />
+<img width="1920" height="929" alt="Admin_Dashboard" src="https://github.com/user-attachments/assets/18dd8ed4-ad33-4e84-b54d-2f67c7e26048" />
 
 ---
 ## 📡 API Overview
