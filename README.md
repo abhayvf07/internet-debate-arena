@@ -192,7 +192,8 @@ Environment variables must be added in the hosting dashboard.
 
 Example sections:
 
-* Homepage
+* Homepage<img width="1920" height="1080" alt="Home Page" src="https://github.com/user-attachments/assets/0da1784d-16ae-4334-a332-f7dddcd533df" />
+
 * Debate page
 * Argument section
 * Admin dashboard
