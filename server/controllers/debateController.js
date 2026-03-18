@@ -52,11 +52,6 @@ const voteOnDebate = asyncHandler(async (req, res) => {
 // @desc    Create a debate
 // @route   POST /api/debates
 const createDebate = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
     const result = await debateService.createDebate({
         ...req.body,
         userId: req.user._id,

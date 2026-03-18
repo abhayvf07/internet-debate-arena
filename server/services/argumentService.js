@@ -4,6 +4,7 @@ const Debate = require("../models/Debate");
 const User = require("../models/User");
 const { emitToDebate } = require("../socket/index");
 const { recalcTrendingScore } = require("./debateService");
+const { deleteCachePattern } = require("../config/redis");
 
 /**
  * Create a top-level argument
@@ -48,9 +49,10 @@ const createArgument = async ({ debateId, text, side, userId }) => {
     // Recalculate trending score
     await recalcTrendingScore(debateId);
 
-    const populated = await argument.populate("author", "name");
+    // Emit real-time event BEFORE returning, cache invalidated BEFORE emit
+    await deleteCachePattern("debates:*");
+    await deleteCachePattern(`debate:single:*${debateId}*`);
 
-    // Emit real-time event
     emitToDebate(debateId, "argumentAdded", populated.toObject());
 
     return populated;
@@ -93,6 +95,9 @@ const replyToArgument = async ({ parentId, text, userId }) => {
     await recalcTrendingScore(parent.debateId);
 
     const populated = await reply.populate("author", "name");
+
+    await deleteCachePattern("debates:*");
+    await deleteCachePattern(`debate:single:*${parent.debateId}*`);
 
     // Emit real-time event
     emitToDebate(parent.debateId, "argumentAdded", populated.toObject());
@@ -194,6 +199,9 @@ const likeArgument = async (argumentId, userId) => {
         alert = "Someone liked your argument";
     }
 
+    await deleteCachePattern("debates:*");
+    await deleteCachePattern(`debate:single:*${argument.debateId}*`);
+
     return { liked, likes: argument.likes, alert };
 };
 
@@ -232,6 +240,9 @@ const deleteArgument = async (argumentId, userId, userRole) => {
 
     // Also remove likes related to this argument
     await Like.deleteMany({ argumentId });
+
+    await deleteCachePattern("debates:*");
+    await deleteCachePattern(`debate:single:*${argument.debateId}*`);
 
     return { message: "Argument deleted successfully" };
 };

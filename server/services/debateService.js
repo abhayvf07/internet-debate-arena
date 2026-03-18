@@ -5,6 +5,7 @@ const Vote = require("../models/Vote");
 const Like = require("../models/Like");
 const { paginate } = require("../utils/pagination");
 const { emitToDebate } = require("../socket/index");
+const { deleteCachePattern } = require("../config/redis");
 
 /**
  * Recalculate and store trendingScore for a debate
@@ -163,6 +164,10 @@ const incrementView = async (debateId) => {
     // Recalculate trending score
     await recalcTrendingScore(debateId);
 
+    // Invalidate caches
+    await deleteCachePattern("debates:*");
+    await deleteCachePattern(`debate:single:*${debateId}*`);
+
     return { views: debate.views };
 };
 
@@ -235,6 +240,10 @@ const voteOnDebate = async (debateId, side, userId) => {
         userVoteSide: updatedVote ? updatedVote.side : null,
     };
 
+    // Invalidate caches BEFORE sending event
+    await deleteCachePattern("debates:*");
+    await deleteCachePattern(`debate:single:*${debateId}*`);
+
     // Emit real-time event
     emitToDebate(debateId, "voteUpdated", result);
 
@@ -260,7 +269,11 @@ const createDebate = async ({ title, description, category, tags, userId }) => {
         creator: userId,
     });
 
-    return debate.populate("creator", "name");
+    const populated = await debate.populate("creator", "name");
+
+    await deleteCachePattern("debates:*");
+
+    return populated;
 };
 
 /**
@@ -295,6 +308,9 @@ const deleteDebate = async (debateId, user) => {
     if (argIds.length > 0) {
         await Like.deleteMany({ argumentId: { $in: argIds } });
     }
+
+    await deleteCachePattern("debates:*");
+    await deleteCachePattern(`debate:single:*${debateId}*`);
 
     return { message: "Debate removed" };
 };

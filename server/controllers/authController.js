@@ -5,11 +5,6 @@ const { asyncHandler } = require("../middleware/errorMiddleware");
 // @desc    Register a new user
 // @route   POST /api/auth/register
 const register = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
     const result = await authService.registerUser(req.body);
     res.status(201).json(result);
 });
@@ -17,11 +12,6 @@ const register = asyncHandler(async (req, res) => {
 // @desc    Login user
 // @route   POST /api/auth/login
 const login = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
     const result = await authService.loginUser(req.body);
     res.json(result);
 });

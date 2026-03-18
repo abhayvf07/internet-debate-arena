@@ -4,6 +4,7 @@ const {
 } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
+const { validate } = require("../middleware/joiValidator");
 const {
     registerValidator,
     loginValidator,
@@ -11,8 +12,8 @@ const {
 
 const router = express.Router();
 
-router.post("/register", registerValidator, register);
-router.post("/login", loginValidator, login);
+router.post("/register", validate(registerValidator), register);
+router.post("/login", validate(loginValidator), login);
 router.post("/refresh-token", refreshToken);
 router.get("/me", protect, getMe);
 router.get("/stats", protect, getUserStats);

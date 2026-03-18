@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
 const connectDB = require("./config/db");
 const logger = require("./utils/logger");
 const { errorHandler } = require("./middleware/errorMiddleware");
@@ -31,6 +32,7 @@ app.use(cors({
     credentials: true,
 }));
 app.use(mongoSanitize()); // Prevent NoSQL injection
+app.use(xss()); // Sanitize against XSS
 
 // Request logging via Winston
 app.use(morgan(":method :url :status :response-time ms", { stream: logger.stream }));

@@ -61,4 +61,25 @@ const deleteCache = async (key) => {
     }
 };
 
-module.exports = { getCache, setCache, deleteCache };
+/**
+ * Delete cache keys using a pattern with SCAN
+ */
+async function deleteCachePattern(pattern) {
+    if (!client) return;
+    try {
+        const stream = client.scanStream({
+            match: pattern,
+            count: 100
+        });
+
+        for await (const keys of stream) {
+            if (keys.length) {
+                await client.del(keys);
+            }
+        }
+    } catch (err) {
+        logger.error(`Error deleting cache pattern ${pattern}: ${err.message}`);
+    }
+}
+
+module.exports = { getCache, setCache, deleteCache, deleteCachePattern };

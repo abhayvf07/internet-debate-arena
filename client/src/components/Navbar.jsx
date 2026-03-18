@@ -41,21 +41,7 @@ export default function Navbar() {
                 </span>
             </Link>
 
-            {/* Search bar */}
-            <form onSubmit={handleSearch} style={{
-                display: 'flex', gap: '0.5rem', flex: '0 1 340px',
-            }}>
-                <input
-                    className="input-field"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder="Search debates..."
-                    style={{ flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                />
-                <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
-                    🔍
-                </button>
-            </form>
+            {/* Search bar removed per user request */}
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
                 {/* Theme toggle */}
