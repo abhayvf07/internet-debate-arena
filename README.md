@@ -206,8 +206,6 @@ password: Abhay@07
 
 Push this repository to **GitHub** to store and share your code. From there, you can add a deployment workflow (e.g., GitHub Actions) or connect to a hosting provider of your choice.
 
-Make sure to configure your environment variables in your hosting platform or local `.env` files.
-
 ---
 # 📸 Screenshots
 
