@@ -211,31 +211,31 @@ Push this repository to **GitHub** to store and share your code. From there, you
 
 ## 🏠 Home Page
 splays trending debates, categories, and latest discussions.
-<img width="1920" height="923" alt="Home Page" src="screenshots/Home Page.png" />
+<img width="1920" height="923" alt="Home Page" src="screenshots/Home_Page.png" />
 
 ## 🔐 Signup Page
 User registration with secure authentication.
-<img width="1920" height="919" alt="Sign Up" src="https://github.com/user-attachments/assets/fc4b03e4-1d54-4289-a92d-b79d18539e5e" />
+<img width="1920" height="919" alt="Sign Up" src="screenshots/Sign_Up.png" />
 
 ## 🔑 Login Page
 Login system with JWT authentication.
-<img width="1920" height="919" alt="Login" src="https://github.com/user-attachments/assets/717c94ca-6924-474a-b73c-c5c6ac2805fd" />
+<img width="1920" height="919" alt="Login" src="screenshots/Login.png" />
 
 ## 🗳️ Create Debate
 Users can create debates and choose Pro / Con topics.
-<img width="1920" height="923" alt="Create_Debate" src="https://github.com/user-attachments/assets/a9fdd9e2-d680-4d41-b674-0454dfa75123" />
+<img width="1920" height="923" alt="Create_Debate" src="screenshots/Create_Debate.png" />
 
 ## 📊 Leaderboard
 Shows top contributors based on activity and engagement.
-<img width="1920" height="910" alt="Leaderboard" src="https://github.com/user-attachments/assets/edd11ad3-dfab-4278-b494-0569b76e74b9" />
+<img width="1920" height="910" alt="Leaderboard" src="screenshots/Leaderboard.png" />
 
 ## 👤 User Profile
 Displays user information, debates, and contributions.
-<img width="1920" height="904" alt="User_Portfolio" src="https://github.com/user-attachments/assets/3c9469f3-9e99-47d5-b8fe-1839a7f82888" />
+<img width="1920" height="904" alt="User_Portfolio" src="screenshots/User_Portfolio.png" />
 
 ## 🛡️ Admin Dashboard
 Admin panel for managing users, debates, and reports.
-<img width="1920" height="929" alt="Admin_Dashboard" src="https://github.com/user-attachments/assets/18dd8ed4-ad33-4e84-b54d-2f67c7e26048" />
+<img width="1920" height="929" alt="Admin_Dashboard" src="screenshots/Admin_Dashboard.png" />
 
 ---
 ## 📡 API Overview
