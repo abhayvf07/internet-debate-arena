@@ -211,7 +211,7 @@ Push this repository to **GitHub** to store and share your code. From there, you
 
 ## 🏠 Home Page
 splays trending debates, categories, and latest discussions.
-<img width="1920" height="923" alt="Home Page" src="https://github.com/user-attachments/assets/d8c68a19-d66a-4656-9d72-164bcfe7a977" />
+<img width="1920" height="923" alt="Home Page" src="screenshots/Home Page.png" />
 
 ## 🔐 Signup Page
 User registration with secure authentication.
