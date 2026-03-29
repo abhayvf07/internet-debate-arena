@@ -4,12 +4,6 @@ A full-stack **MERN debate platform** where users can create debate topics, argu
 The platform includes authentication, real-time interactions, moderation tools, bookmarking, and trending debates.
 
 ---
-## 🌍 Live Demo
-
-🔗 Frontend:  
-🔗 Backend: 
-
----
 ## 💡 Why This Project?
 
 Internet Debate Arena is designed to promote structured discussions instead of random comment sections.  
