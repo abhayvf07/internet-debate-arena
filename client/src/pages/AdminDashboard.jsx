@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getReports, resolveReport, adminGetUsers, adminDeleteDebate, adminDeleteArgument, adminBanUser, adminGetStats } from '../services/api';
+import { adminGetReports, resolveReport, adminGetUsers, adminDeleteDebate, adminDeleteArgument, adminBanUser, adminGetStats } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -12,7 +12,7 @@ export default function AdminDashboard() {
 
     const fetchReports = async () => {
         try {
-            const res = await getReports();
+            const res = await adminGetReports();
             setReports(res.data);
         } catch (err) {
             console.error('Failed to fetch reports:', err);
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
 
     const fetchUsers = async () => {
         try {
-            const res = await adminGetUsers({ limit: 50 });
+            const res = await adminGetUsers({ limit: 100 });
             setUsers(res.data.users);
         } catch (err) {
             console.error('Failed to fetch users:', err);

@@ -11,7 +11,7 @@ import ArgumentCard from '../components/ArgumentCard';
 import { PageSkeleton } from '../components/SkeletonLoader';
 import DebateAnalytics from '../components/DebateAnalytics';
 import toast from 'react-hot-toast';
-import { getSocket, joinDebateRoom, leaveDebateRoom } from '../socket/socket';
+import { getSocket } from '../socket/socket';
 
 export default function DebatePage() {
     const { id } = useParams();
@@ -25,7 +25,18 @@ export default function DebatePage() {
     // Socket.io integration
     useEffect(() => {
         const socket = getSocket(user?.accessToken || user?.token);
-        joinDebateRoom(id);
+
+        const handleConnect = () => {
+            socket.emit("joinDebate", id);
+        };
+
+        // If already connected (returning to a debate), join immediately
+        if (socket.connected) {
+            socket.emit("joinDebate", id);
+        } else {
+            // Otherwise wait for the connect event
+            socket.on("connect", handleConnect);
+        }
 
         socket.on('voteUpdated', (data) => {
             queryClient.setQueryData(['debate', id], (old) => {
@@ -39,6 +50,9 @@ export default function DebatePage() {
         });
 
         socket.on('argumentAdded', (newArgument) => {
+            // Don't update via socket if this user posted it — React Query mutation already handles it
+            if (newArgument.author?._id === user?._id) return;
+
             queryClient.setQueryData(['arguments', id], (old) => {
                 if (!old) return old;
                 // If it's a top-level argument
@@ -60,7 +74,8 @@ export default function DebatePage() {
         });
 
         return () => {
-            leaveDebateRoom(id);
+            socket.emit("leaveDebate", id);
+            socket.off("connect", handleConnect);
             socket.off('voteUpdated');
             socket.off('argumentAdded');
         };

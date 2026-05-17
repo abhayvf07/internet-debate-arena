@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
 
 let socket = null;
 
@@ -56,7 +56,7 @@ export const joinDebateRoom = (debateId) => {
  * Leave a debate room
  */
 export const leaveDebateRoom = (debateId) => {
-    if (socket?.connected) {
+    if (socket) {
         socket.emit("leaveDebate", debateId);
     }
 };

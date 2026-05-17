@@ -1,4 +1,3 @@
-const { validationResult } = require("express-validator");
 const debateService = require("../services/debateService");
 const { asyncHandler } = require("../middleware/errorMiddleware");
 

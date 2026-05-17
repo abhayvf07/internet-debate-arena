@@ -99,11 +99,12 @@ export default function Home() {
         setPage(1);
     };
 
-    if (loadingDebates && debatesData.debates.length === 0) {
+    const debates = debatesData?.debates ?? [];
+    const totalPages = debatesData?.totalPages ?? 1;
+
+    if (loadingDebates && debates.length === 0) {
         return <PageSkeleton />;
     }
-
-    const { debates, totalPages } = debatesData;
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>

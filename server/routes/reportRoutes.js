@@ -4,12 +4,13 @@ const {
     getReports,
     resolveReport,
 } = require("../controllers/bookmarkReportController");
-const { protect, admin } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
 router.post("/", protect, createReport);
-router.get("/", protect, admin, getReports);
-router.patch("/:id", protect, admin, resolveReport);
+router.get("/", protect, adminOnly, getReports);
+router.patch("/:id", protect, adminOnly, resolveReport);
 
 module.exports = router;

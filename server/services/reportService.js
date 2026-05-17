@@ -10,6 +10,14 @@ const createReport = async ({ userId, argumentId, reason }) => {
         throw error;
     }
 
+    // Prevent duplicate reports — one pending report per user per argument
+    const existing = await Report.findOne({ userId, argumentId, status: "pending" });
+    if (existing) {
+        const error = new Error("You have already reported this argument");
+        error.statusCode = 409;
+        throw error;
+    }
+
     return Report.create({ userId, argumentId, reason });
 };
 

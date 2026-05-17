@@ -1,37 +1,35 @@
+require("dotenv").config();
 const express = require("express");
+const connectDB = require("./config/db");
+
 const http = require("http");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const path = require("path");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
-const connectDB = require("./config/db");
+
 const logger = require("./utils/logger");
 const { errorHandler } = require("./middleware/errorMiddleware");
 const { initSocket } = require("./socket/index");
 
-// Load env vars
-dotenv.config();
-
 // Connect to database
-connectDB();
-
 const app = express();
+
 const server = http.createServer(app);
 
 // Initialize Socket.io
 initSocket(server);
 
-// ── Security Middleware ──
+// Security Middleware 
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
 }));
-app.use(mongoSanitize()); // Prevent NoSQL injection
+app.use(mongoSanitize());
 app.use(xss()); // Sanitize against XSS
 
 // Request logging via Winston
@@ -52,15 +50,6 @@ const authLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-
-const voteLimiter = rateLimit({
-    windowMs: 60 * 1000,
-    max: 50,
-    message: { message: "Too many vote requests, please slow down" },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
 const generalLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 100,
@@ -78,20 +67,27 @@ app.use("/api/bookmarks", generalLimiter, require("./routes/bookmarkRoutes"));
 app.use("/api/reports", generalLimiter, require("./routes/reportRoutes"));
 app.use("/api/admin", generalLimiter, require("./routes/adminRoutes"));
 
-// Apply vote limiter to specific vote routes
-app.use("/api/debates/:id/vote", voteLimiter);
-app.use("/api/arguments/like", voteLimiter);
-
 // Health check
 app.get("/", (req, res) => {
     res.json({ message: "Internet Debate Arena API is running" });
 });
 
-// ── Global Error Handler (must be last) ──
+// Global Error Handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-    logger.info(`Server running on port ${PORT}`);
-});
+// Start server after DB connection is established to avoid handling requests without DB access
+const startServer = async () => {
+  try {
+    await connectDB();
+    server.listen(PORT, () => {
+      logger.info(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    logger.error(error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

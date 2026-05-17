@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import { PageSkeleton } from './components/SkeletonLoader';
 
 const Home = React.lazy(() => import('./pages/Home'));
@@ -18,66 +19,68 @@ const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <BrowserRouter>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: 'rgba(30, 30, 60, 0.95)',
-                color: '#e2e8f0',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                backdropFilter: 'blur(12px)',
-              },
-              success: {
-                iconTheme: { primary: '#22c55e', secondary: '#fff' },
-              },
-              error: {
-                iconTheme: { primary: '#ef4444', secondary: '#fff' },
-              },
-            }}
-          />
-          <MainLayout>
-            <Suspense fallback={<PageSkeleton />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
-                <Route
-                  path="/create"
-                  element={
-                    <ProtectedRoute>
-                      <CreateDebate />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/debate/:id" element={<DebatePage />} />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute adminOnly>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
-            </Suspense>
-          </MainLayout>
-        </BrowserRouter>
-      </ThemeProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ThemeProvider>
+          <BrowserRouter>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: 'rgba(30, 30, 60, 0.95)',
+                  color: '#e2e8f0',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(12px)',
+                },
+                success: {
+                  iconTheme: { primary: '#22c55e', secondary: '#fff' },
+                },
+                error: {
+                  iconTheme: { primary: '#ef4444', secondary: '#fff' },
+                },
+              }}
+            />
+            <MainLayout>
+              <Suspense fallback={<PageSkeleton />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route
+                    path="/create"
+                    element={
+                      <ProtectedRoute>
+                        <CreateDebate />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/debate/:id" element={<DebatePage />} />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </Suspense>
+            </MainLayout>
+          </BrowserRouter>
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

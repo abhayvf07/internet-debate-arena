@@ -30,4 +30,7 @@ const reportSchema = new mongoose.Schema(
 // Fast report listing by status
 reportSchema.index({ status: 1, createdAt: -1 });
 
+// Prevent duplicate reports — one report per user per argument
+reportSchema.index({ userId: 1, argumentId: 1 }, { unique: true });
+
 module.exports = mongoose.model("Report", reportSchema);

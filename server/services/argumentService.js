@@ -37,6 +37,8 @@ const createArgument = async ({ debateId, text, side, userId }) => {
         parentId: null,
     });
 
+    const populated = await argument.populate("author", "name");
+
     // Atomic increment of argumentsCount + update lastActivityAt
     await Debate.updateOne(
         { _id: debateId },
@@ -49,18 +51,21 @@ const createArgument = async ({ debateId, text, side, userId }) => {
     // Recalculate trending score
     await recalcTrendingScore(debateId);
 
-    // Emit real-time event BEFORE returning, cache invalidated BEFORE emit
+    // Invalidate caches before emit
     await deleteCachePattern("debates:*");
     await deleteCachePattern(`debate:single:*${debateId}*`);
 
-    emitToDebate(debateId, "argumentAdded", populated.toObject());
+    // Emit real-time event — wrapped so socket failure doesn't crash argument creation
+    try {
+        emitToDebate(debateId, "argumentAdded", populated.toObject());
+    } catch (err) {
+        console.error("Socket emit failed in createArgument:", err.message);
+    }
 
     return populated;
 };
 
-/**
- * Reply to an argument
- */
+// Reply to an argument
 const replyToArgument = async ({ parentId, text, userId }) => {
     if (!parentId || !text) {
         const error = new Error("parentId and text are required");
@@ -99,8 +104,12 @@ const replyToArgument = async ({ parentId, text, userId }) => {
     await deleteCachePattern("debates:*");
     await deleteCachePattern(`debate:single:*${parent.debateId}*`);
 
-    // Emit real-time event
-    emitToDebate(parent.debateId, "argumentAdded", populated.toObject());
+    // Emit real-time event — wrapped so socket failure doesn't crash reply creation
+    try {
+        emitToDebate(parent.debateId, "argumentAdded", populated.toObject());
+    } catch (err) {
+        console.error("Socket emit failed in replyToArgument:", err.message);
+    }
 
     return {
         argument: populated,
@@ -117,6 +126,7 @@ const getArgumentsByDebate = async (debateId, userId) => {
     const allArgs = await Argument.find({ debateId })
         .populate("author", "name")
         .sort({ createdAt: -1 })
+        .limit(200) // prevent memory blow-up on high-traffic debates
         .lean();
 
     // Build nested structure

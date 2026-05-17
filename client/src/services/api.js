@@ -14,7 +14,22 @@ API.interceptors.request.use((config) => {
     return config;
 });
 
-// Response interceptor — handle 401 with token refresh
+// Token refresh state — prevents concurrent refresh races
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
+// Response interceptor — handle 401 with serialized token refresh
 API.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -22,6 +37,18 @@ API.interceptors.response.use(
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
+
+            // If a refresh is already in progress, queue this request
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then((token) => {
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return API(originalRequest);
+                }).catch((err) => Promise.reject(err));
+            }
+
+            isRefreshing = true;
 
             try {
                 const user = JSON.parse(localStorage.getItem('user'));
@@ -35,13 +62,19 @@ API.interceptors.response.use(
                     user.token = newAccessToken;
                     localStorage.setItem('user', JSON.stringify(user));
 
+                    processQueue(null, newAccessToken);
+
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                     return API(originalRequest);
                 }
-            } catch {
+            } catch (refreshError) {
+                processQueue(refreshError, null);
                 // Refresh failed — clear user and redirect
                 localStorage.removeItem('user');
                 window.location.href = '/login';
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
 

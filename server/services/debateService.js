@@ -40,6 +40,9 @@ const getDebates = async (query) => {
     if (query.tag) {
         filter.tags = { $in: [query.tag] };
     }
+    if (query.creator) {
+        filter.creator = query.creator;
+    }
 
     // Sort options
     let sort = { createdAt: -1 };
@@ -244,8 +247,12 @@ const voteOnDebate = async (debateId, side, userId) => {
     await deleteCachePattern("debates:*");
     await deleteCachePattern(`debate:single:*${debateId}*`);
 
-    // Emit real-time event
-    emitToDebate(debateId, "voteUpdated", result);
+    // Emit real-time event — wrapped so socket failure doesn't crash vote flow
+    try {
+        emitToDebate(debateId, "voteUpdated", result);
+    } catch (err) {
+        console.error("Socket emit failed (voteUpdated):", err.message);
+    }
 
     return result;
 };
@@ -259,6 +266,7 @@ const createDebate = async ({ title, description, category, tags, userId }) => {
         parsedTags = Array.isArray(tags)
             ? tags.map((t) => t.trim()).filter(Boolean)
             : tags.split(",").map((t) => t.trim()).filter(Boolean);
+        parsedTags = parsedTags.slice(0, 10);
     }
 
     const debate = await Debate.create({

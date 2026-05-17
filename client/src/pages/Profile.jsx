@@ -22,17 +22,14 @@ export default function Profile() {
             setLoading(true);
             try {
                 const [debatesRes, bookmarksRes, leaderboardRes, meRes, statsRes] = await Promise.all([
-                    getDebates({ limit: 100 }),
+                    getDebates({ creator: user?._id, limit: 50 }),
                     getBookmarks(),
                     getLeaderboard(10),
                     getMe(),
                     getUserStats(),
                 ]);
-                // Filter user's debates
-                const mine = debatesRes.data.debates.filter(
-                    (d) => d.creator?._id === user?._id
-                );
-                setMyDebates(mine);
+                // User's debates already filtered server-side via creator param
+                setMyDebates(debatesRes.data.debates);
                 setBookmarkedDebates(bookmarksRes.data);
                 setLeaderboard(leaderboardRes.data);
                 setLivePoints(meRes.data.points);

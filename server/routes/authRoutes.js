@@ -1,4 +1,6 @@
 const express = require("express");
+const router = express.Router();
+
 const {
     register, login, refreshToken, getMe, getUserStats, updateAvatar,
 } = require("../controllers/authController");
@@ -10,7 +12,6 @@ const {
     loginValidator,
 } = require("../validators/authValidator");
 
-const router = express.Router();
 
 router.post("/register", validate(registerValidator), register);
 router.post("/login", validate(loginValidator), login);
