@@ -4,12 +4,13 @@
  * @param {Object} model    — Mongoose model
  * @param {Object} filter   — query filter
  * @param {Object} query    — req.query (page, limit)
- * @param {Object} options  — { populate, sort, select }
+ * @param {Object} options  — { populate, sort, select, maxLimit (default 50) }
  * @returns { results, page, totalPages, total }
  */
 const paginate = async (model, filter = {}, query = {}, options = {}) => {
     const page = Math.max(1, parseInt(query.page) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(query.limit) || 10));
+    const maxLimit = options.maxLimit || 50;
+    const limit = Math.min(maxLimit, Math.max(1, parseInt(query.limit) || 10));
     const skip = (page - 1) * limit;
 
     let dbQuery = model.find(filter);

@@ -8,6 +8,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+server/logs/
+client/logs/
 
 # ==============================
 # Node modules
@@ -30,8 +32,11 @@ server/dist/
 # ==============================
 .env
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
 *.local
 
@@ -41,12 +46,20 @@ server/dist/
 .cache/
 .tmp/
 .temp/
+*.swp
+*.swo
 
 # ==============================
 # OS files
 # ==============================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # ==============================
 # Editor directories and files
@@ -64,6 +77,8 @@ Thumbs.db
 # Coverage & testing
 # ==============================
 coverage/
+*.lcov
+.nyc_output/
 
 # ==============================
 # Runtime data
@@ -76,16 +91,11 @@ pids
 # ==============================
 # Optional uploads folder
 # ==============================
-uploads/
-
+server/uploads/avatars/*
+!server/uploads/avatars/.gitkeep
 # ==============================
 # Redis / database dump files
 # ==============================
 dump.rdb
 *.rdb
 
-# ==============================
-# Optional logs folder (backend)
-# ==============================
-server/logs/
-client/logs/

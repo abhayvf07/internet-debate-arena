@@ -14,6 +14,7 @@ const getAllUsers = async (query) => {
     const data = await paginate(User, {}, query, {
         select: "-password -refreshToken",
         sort: { createdAt: -1 },
+        maxLimit: 200,
     });
 
     return {
