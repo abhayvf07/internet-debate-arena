@@ -1,32 +1,30 @@
 const Redis = require("ioredis");
-const logger = require("../utils/logger");
 
 let client = null;
 
 if (process.env.REDIS_URL) {
+    // Create client
     client = new Redis(process.env.REDIS_URL, {
         maxRetriesPerRequest: 3,
         retryDelayOnFailover: 300,
         lazyConnect: true,
     });
 
-    client.on("connect", () => logger.info("Redis connected"));
+    client.on("connect", () => console.log("Redis connected"));
     client.on("error", (err) => {
-        logger.warn(`Redis error: ${err.message}`);
+        console.warn(`Redis error: ${err.message}`);
     });
 
     // Attempt connection
     client.connect().catch((err) => {
-        logger.warn(`Redis connection failed: ${err.message}. Caching disabled.`);
+        console.warn(`Redis connection failed: ${err.message}. Caching disabled.`);
         client = null;
     });
 } else {
-    logger.warn("REDIS_URL not set — caching disabled");
+    console.warn("REDIS_URL not set — caching disabled");
 }
 
-/**
- * Get cached value by key
- */
+// Get cached value by key
 const getCache = async (key) => {
     if (!client) return null;
     try {
@@ -37,21 +35,17 @@ const getCache = async (key) => {
     }
 };
 
-/**
- * Set cache with TTL (seconds)
- */
+// Set cache with TTL (seconds)
 const setCache = async (key, data, ttl) => {
     if (!client) return;
     try {
         await client.setex(key, ttl, JSON.stringify(data));
     } catch {
-        // Silently fail — caching is optional
+        // Silently fail
     }
 };
 
-/**
- * Delete cache by key
- */
+// Delete single cache by key
 const deleteCache = async (key) => {
     if (!client) return;
     try {
@@ -61,9 +55,7 @@ const deleteCache = async (key) => {
     }
 };
 
-/**
- * Delete cache keys using a pattern with SCAN
- */
+// Delete multiple cache keys using a pattern with SCAN
 async function deleteCachePattern(pattern) {
     if (!client) return;
     try {
@@ -78,7 +70,7 @@ async function deleteCachePattern(pattern) {
             }
         }
     } catch (err) {
-        logger.error(`Error deleting cache pattern ${pattern}: ${err.message}`);
+        console.error(`Error deleting cache pattern ${pattern}: ${err.message}`);
     }
 }
 

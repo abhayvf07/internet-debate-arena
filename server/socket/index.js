@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const logger = require("../utils/logger");
 
 let io = null;
 
@@ -33,13 +32,13 @@ const initSocket = (server) => {
     });
 
     io.on("connection", (socket) => {
-        logger.debug(`Socket connected: ${socket.id}`);
+        console.debug(`Socket connected: ${socket.id}`);
 
         // Join a debate room
         socket.on("joinDebate", (debateId) => {
             if (debateId) {
                 socket.join(`debate:${debateId}`);
-                logger.debug(`Socket ${socket.id} joined debate:${debateId}`);
+                console.debug(`Socket ${socket.id} joined debate:${debateId}`);
             }
         });
 
@@ -51,11 +50,11 @@ const initSocket = (server) => {
         });
 
         socket.on("disconnect", () => {
-            logger.debug(`Socket disconnected: ${socket.id}`);
+            console.debug(`Socket disconnected: ${socket.id}`);
         });
     });
 
-    logger.info("Socket.io initialized");
+    console.log("Socket.io initialized");
     return io;
 };
 

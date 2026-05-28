@@ -1,5 +1,3 @@
-const logger = require("../utils/logger");
-
 /**
  * Global Error Handling Middleware
  * Catches and formats all errors consistently
@@ -38,11 +36,10 @@ const errorHandler = (err, req, res, next) => {
         message = "Token has expired";
     }
 
-    // Log with Winston
     if (statusCode >= 500) {
-        logger.error(`${statusCode} - ${message} - ${req.method} ${req.originalUrl} - ${err.stack}`);
+        console.error(`${statusCode} - ${message} - ${req.method} ${req.originalUrl} - ${err.stack}`);
     } else {
-        logger.warn(`${statusCode} - ${message} - ${req.method} ${req.originalUrl}`);
+        console.warn(`${statusCode} - ${message} - ${req.method} ${req.originalUrl}`);
     }
 
     res.status(statusCode).json({

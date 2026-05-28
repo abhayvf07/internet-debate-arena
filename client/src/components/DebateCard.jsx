@@ -5,8 +5,14 @@ export default function DebateCard({ debate, showTrending = false }) {
     const date = formatDate(debate.createdAt);
 
     return (
-        <Link to={`/debate/${debate._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div className="glass glass-hover animate-in" style={{ padding: '1.5rem' }}>
+        <Link
+            to={`/debate/${debate._id}`}
+            style={{ display: 'block', width: '100%', height: '100%', textDecoration: 'none', color: 'inherit' }}
+        >
+            <div
+                className="glass glass-hover animate-in h-full"
+                style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem' }}
+            >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                     <span className="badge badge-category">{debate.category || 'Other'}</span>
                     {showTrending && debate.trendingScore !== undefined && (
@@ -49,12 +55,13 @@ export default function DebateCard({ debate, showTrending = false }) {
                 <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     fontSize: '0.8rem', color: 'var(--text-muted)',
+                    marginTop: 'auto'
                 }}>
                     <span>by {debate.creator?.name || 'Unknown'}</span>
                     <span>{date}</span>
                 </div>
 
-                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: '0.75rem' }}>
+                <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: '0.75rem' }}>
                     {debate.argumentsCount !== undefined && (
                         <span>💬 {debate.argumentsCount} args</span>
                     )}

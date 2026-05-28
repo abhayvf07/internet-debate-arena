@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "Name is required"],
             trim: true,
+            minlength: 2,
             maxlength: 50,
         },
         email: {
@@ -15,16 +16,24 @@ const userSchema = new mongoose.Schema(
             unique: true,
             lowercase: true,
             trim: true,
+            match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
         },
         password: {
             type: String,
             required: [true, "Password is required"],
             minlength: 6,
+            select: false,
         },
         role: {
             type: String,
             enum: ["user", "admin"],
             default: "user",
+            lowercase: true,
+            trim: true,
+        },
+        token: {
+            type: String,
+            default: null,
         },
         points: {
             type: Number,

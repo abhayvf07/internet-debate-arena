@@ -1,4 +1,6 @@
-require("dotenv").config();
+// .env file access
+require("dotenv").config(); 
+
 const express = require("express");
 const connectDB = require("./config/db");
 
@@ -11,35 +13,36 @@ const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 
-const logger = require("./utils/logger");
 const { errorHandler } = require("./middleware/errorMiddleware");
 const { initSocket } = require("./socket/index");
 
-// Connect to database
+// Database connect function const 
 const app = express();
-
+// Create HTTP server
 const server = http.createServer(app);
 
-// Initialize Socket.io
+// Socket.io start
 initSocket(server);
 
 // Security Middleware 
 app.use(helmet({ crossOriginResourcePolicy: false }));
+// Enable Frontend access 
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
 }));
-app.use(mongoSanitize());
-app.use(xss()); // Sanitize against XSS
+// Data sanitization
+app.use(mongoSanitize()); // MongoDB malicious data
+app.use(xss()); // XSS malicious scripts
 
-// Request logging via Winston
-app.use(morgan(":method :url :status :response-time ms", { stream: logger.stream }));
+// Request logging to console
+app.use(morgan(":method :url :status :response-time ms"));
 
 // Body parsers
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // JSON data read
+app.use(express.urlencoded({ extended: false })); // Form data read
 
-// Serve uploaded files
+// uploaded files access
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ── Rate Limiters ──
@@ -67,9 +70,14 @@ app.use("/api/bookmarks", generalLimiter, require("./routes/bookmarkRoutes"));
 app.use("/api/reports", generalLimiter, require("./routes/reportRoutes"));
 app.use("/api/admin", generalLimiter, require("./routes/adminRoutes"));
 
-// Health check
+// Health check route
 app.get("/", (req, res) => {
     res.json({ message: "Internet Debate Arena API is running" });
+});
+
+// Catch unknown routes and return a 404 JSON response
+app.use((req, res) => {
+    res.status(404).json({ message: "Route not found" });
 });
 
 // Global Error Handler
@@ -82,10 +90,10 @@ const startServer = async () => {
   try {
     await connectDB();
     server.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    logger.error(error.message);
+    console.error(error.message);
     process.exit(1);
   }
 };

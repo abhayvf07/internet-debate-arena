@@ -99,3 +99,6 @@ server/uploads/avatars/*
 dump.rdb
 *.rdb
 
+# ==============================
+user.txt
+
