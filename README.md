@@ -1,80 +1,80 @@
-# 🌐 Internet Debate Arena
+# Internet Debate Arena
 
-A full-stack **MERN debate platform** where users can create debate topics, argue on **Pro / Con sides**, vote on arguments, and engage in structured discussions.  
-The platform features real-time interactions via Socket.io, Redis caching, JWT authentication, admin moderation, bookmarking, and trending debates.
-
----
-
-## 💡 Why This Project?
-
-Internet Debate Arena promotes structured discussions over random comment sections.  
-It encourages users to think critically and present logical arguments on clearly defined Pro / Con sides.
+A full-stack debate platform I built using the MERN stack where users can create debate topics, pick a side (Pro or Con), post arguments, vote, and engage in structured discussions. It also has real-time updates via Socket.io, Redis caching, JWT auth, admin moderation, bookmarks and a trending system.
 
 ---
 
-## 🏆 Key Highlights
+## Why I Built This
 
-- ⚡ Real-time communication using **Socket.io**
-- 🚀 **Redis** caching for high-performance API responses
-- 🔐 Secure authentication using **JWT** (access + refresh tokens)
-- 🛡️ Admin moderation system
-- 📦 Scalable MERN architecture with service-layer pattern
-- 🎨 Modern UI with **React 19** + **Tailwind CSS v4** + **Vite 7**
+I always felt like online comment sections are just chaos — people talking past each other with no structure. I wanted to build something that actually encourages people to think and present their side clearly. So I made a platform where every debate has two defined sides and you have to actually argue for one.
+
+Beyond the idea itself, this project pushed me to learn a lot of things I hadn't touched before — Socket.io for real-time features, Redis for caching, service-layer backend architecture, and proper JWT refresh token flows. It was challenging but I learned more from this than from anything else I've built.
 
 ---
 
-## 🚀 Features
+## Key Things I Built Into This
 
-### 👤 Authentication
-- User registration and login
-- Secure password hashing with **bcryptjs**
-- **JWT access + refresh token** flow with SHA-256 hashed token storage
-- Protected routes (client-side guard + server middleware)
+- Real-time argument and vote updates using Socket.io
+- Redis caching so the API doesn't hammer the database on every request (and the app still works fine if Redis is down)
+- JWT auth with access + refresh tokens, SHA-256 hashed token storage
+- Admin panel to manage users, debates, reports and bans
+- Auto-calculated trending score based on votes, arguments, views and age
+- Modular service-layer backend — controllers are thin, all business logic lives in services
 
-### 🗳️ Debate System
-- Create debate topics with title, description, category, and tags
-- Join debates on **Pro / Con sides**
-- Vote on debates with **toggle support** (switch sides or remove vote)
-- View trending & latest debates
-- Category filtering, tag filtering & pagination
-- Auto-calculated **trending score** based on votes, arguments, views, and age
+---
 
-### 💬 Arguments & Discussions
-- Post arguments under debates (Pro or Con side)
-- **Threaded replies** to arguments (nested tree structure)
-- Real-time updates via **Socket.io** (new arguments & vote changes broadcast instantly)
-- Like arguments — authors earn points per like
+## Features
 
-### ⭐ User Interaction
-- Bookmark debates for later reading
+### Authentication
+- Register and login
+- Passwords hashed with bcryptjs
+- JWT access + refresh token flow
+- Protected routes on both client and server side
+
+### Debate System
+- Create debates with title, description, category and tags
+- Join on Pro or Con side
+- Vote with toggle support — you can switch sides or remove your vote
+- View trending and latest debates
+- Filter by category or tag, with pagination
+- Trending score auto-calculated from votes, arguments, views and how old the debate is
+
+### Arguments & Discussions
+- Post arguments under any debate (Pro or Con)
+- Reply to arguments — supports nested threaded structure
+- Real-time updates — new arguments and vote changes broadcast instantly via Socket.io
+- Like arguments — authors earn points for every like they receive
+
+### User Features
+- Bookmark debates to read later
 - Like / unlike arguments
 - Report inappropriate arguments
-- User profile with contribution stats (debates created, arguments posted, votes received)
-- Points-based **leaderboard**
+- User profile showing stats — debates created, arguments posted, votes received
+- Points-based leaderboard
 
-### 🛠 Admin Features
-- View and manage all users (paginated)
-- Ban / unban users (toggle, invalidates sessions)
-- Delete debates and arguments with **cascade cleanup**
-- Handle user reports (view pending, mark resolved)
+### Admin Features
+- View and manage all users with pagination
+- Ban or unban users (invalidates their sessions automatically)
+- Delete debates and arguments with cascade cleanup
+- Handle user reports — view pending ones and mark them resolved
 - Admin dashboard with platform-wide stats
 
-### ⚡ Performance & Security
-- **Redis** caching middleware (TTL-based, auto-invalidated on writes)
-- Graceful cache degradation — app works without Redis
-- Pagination for large datasets (configurable limit, max cap)
-- **Helmet** for HTTP security headers
-- **CORS** restricted to CLIENT_URL only
-- **express-mongo-sanitize** against NoSQL injection
-- **xss-clean** against XSS attacks
-- **Rate limiting** — 5 req/min on auth, 50 req/min on votes/likes, 100 req/min general
-- **Joi** request validation with schema-level middleware
-- Console logging + **Morgan** HTTP logging
-- **Multer** for avatar file uploads
+### Performance & Security
+- Redis caching with TTL — auto-invalidated on writes
+- App degrades gracefully if Redis is unavailable
+- Pagination on all large data sets
+- Helmet for HTTP security headers
+- CORS restricted to CLIENT_URL only
+- express-mongo-sanitize against NoSQL injection
+- xss-clean against XSS attacks
+- Rate limiting — 5 req/min auth, 50 req/min votes/likes, 100 req/min general
+- Joi validation on all request schemas
+- Morgan HTTP logging + console logging
+- Multer for avatar uploads
 
 ---
 
-## 🏗 Tech Stack
+## Tech Stack
 
 ### Frontend
 | Technology | Version |
@@ -109,130 +109,130 @@ It encourages users to think critically and present logical arguments on clearly
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 Debate Arena/
 │
-├── client/                        # React frontend (Vite)
-│   ├── public/
-│   ├── src/
-│   │   ├── components/            # Reusable UI components
-│   │   │   ├── ArgumentCard.jsx
-│   │   │   ├── CategoryFilter.jsx
-│   │   │   ├── DebateAnalytics.jsx
-│   │   │   ├── DebateCard.jsx
-│   │   │   ├── ErrorBoundary.jsx
-│   │   │   ├── LoadingSpinner.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Pagination.jsx
-│   │   │   ├── ProtectedRoute.jsx
-│   │   │   ├── ReplySection.jsx
-│   │   │   ├── ScoreBar.jsx
-│   │   │   ├── SkeletonLoader.jsx
-│   │   │   └── VoteButtons.jsx
-│   │   ├── context/               # React context providers
-│   │   │   ├── AuthContext.jsx
-│   │   │   └── ThemeContext.jsx
-│   │   ├── hooks/                 # Custom hooks
-│   │   │   └── useAuth.js
-│   │   ├── layouts/
-│   │   │   └── MainLayout.jsx
-│   │   ├── pages/                 # Route-level page components
-│   │   │   ├── AdminDashboard.jsx
-│   │   │   ├── CreateDebate.jsx
-│   │   │   ├── DebatePage.jsx
-│   │   │   ├── Home.jsx
-│   │   │   ├── Leaderboard.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Profile.jsx
-│   │   │   └── Register.jsx
-│   │   ├── services/
-│   │   │   └── api.js             # Axios instance, all API calls & token refresh interceptor
-│   │   ├── socket/
-│   │   │   └── socket.js          # Socket.io client singleton & room helpers
-│   │   ├── utils/
-│   │   │   └── helpers.js         # formatDate, truncateText, getInitials
-│   │   ├── App.jsx                # Router, lazy loading, context providers
-│   │   ├── index.css              # Global styles + Tailwind directives
-│   │   └── main.jsx               # React DOM entry + QueryClient setup
-│   ├── .env                       # Frontend environment variables
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
+├── client/                        # React frontend (Vite)
+│   ├── public/
+│   ├── src/
+│   │   ├── components/            # Reusable UI components
+│   │   │   ├── ArgumentCard.jsx
+│   │   │   ├── CategoryFilter.jsx
+│   │   │   ├── DebateAnalytics.jsx
+│   │   │   ├── DebateCard.jsx
+│   │   │   ├── ErrorBoundary.jsx
+│   │   │   ├── LoadingSpinner.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Pagination.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── ReplySection.jsx
+│   │   │   ├── ScoreBar.jsx
+│   │   │   ├── SkeletonLoader.jsx
+│   │   │   └── VoteButtons.jsx
+│   │   ├── context/               # React context providers
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── ThemeContext.jsx
+│   │   ├── hooks/                 # Custom hooks
+│   │   │   └── useAuth.js
+│   │   ├── layouts/
+│   │   │   └── MainLayout.jsx
+│   │   ├── pages/                 # Route-level page components
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── CreateDebate.jsx
+│   │   │   ├── DebatePage.jsx
+│   │   │   ├── Home.jsx
+│   │   │   ├── Leaderboard.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   └── Register.jsx
+│   │   ├── services/
+│   │   │   └── api.js             # Axios instance, all API calls & token refresh interceptor
+│   │   ├── socket/
+│   │   │   └── socket.js          # Socket.io client singleton & room helpers
+│   │   ├── utils/
+│   │   │   └── helpers.js         # formatDate, truncateText, getInitials
+│   │   ├── App.jsx                # Router, lazy loading, context providers
+│   │   ├── index.css              # Global styles + Tailwind directives
+│   │   └── main.jsx               # React DOM entry + QueryClient setup
+│   ├── .env
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
 │
-└── server/                        # Express.js backend
-    ├── config/
-    │   ├── db.js                  # MongoDB connection via Mongoose
-    │   └── redis.js               # ioredis client + getCache / setCache / deleteCache helpers
-    ├── controllers/               # Thin request/response handlers — delegate to services
-    │   ├── adminController.js
-    │   ├── argumentController.js
-    │   ├── authController.js
-    │   ├── bookmarkReportController.js
-    │   └── debateController.js
-    ├── middleware/
-    │   ├── adminMiddleware.js     # role === 'admin' guard
-    │   ├── authMiddleware.js      # JWT verify + banned-user check → req.user
-    │   ├── cacheMiddleware.js     # Redis TTL cache intercept for GET routes
-    │   ├── errorMiddleware.js     # Global error handler + asyncHandler wrapper
-    │   ├── joiValidator.js        # Joi schema validation middleware factory
-    │   └── uploadMiddleware.js    # Multer config for avatar uploads
-    ├── models/                    # Mongoose schemas & indexes
-    │   ├── Argument.js
-    │   ├── Bookmark.js
-    │   ├── Debate.js
-    │   ├── Like.js
-    │   ├── Report.js
-    │   ├── User.js
-    │   └── Vote.js
-    ├── routes/
-    │   ├── adminRoutes.js
-    │   ├── argumentRoutes.js
-    │   ├── authRoutes.js
-    │   ├── bookmarkRoutes.js
-    │   ├── debateRoutes.js
-    │   ├── reportRoutes.js
-    │   └── userRoutes.js
-    ├── services/                  # All business logic lives here
-    │   ├── adminService.js
-    │   ├── argumentService.js
-    │   ├── authService.js
-    │   ├── bookmarkService.js
-    │   ├── debateService.js
-    │   └── reportService.js
-    ├── socket/
-    │   └── index.js               # Socket.io server init, JWT auth, debate rooms
-    ├── utils/
-    │   ├── generateTokens.js      # generateAccessToken (15m) + generateRefreshToken (7d)
-    │   └── pagination.js          # Reusable paginate() helper for Mongoose queries
-    ├── validators/
-    │   ├── argumentValidator.js
-    │   ├── authValidator.js
-    │   └── debateValidator.js
-    ├── uploads/                   # Avatar image storage (gitignored)
-    │   └── avatars/
-    ├── logs/                      # Optional runtime logs (gitignored)
-    │   ├── combined.log
-    │   └── error.log
-    ├── .env                       # Server secrets & config
-    ├── package.json
-    └── server.js                  # Entry point — middleware stack, routes, server startup
+└── server/                        # Express.js backend
+    ├── config/
+    │   ├── db.js                  # MongoDB connection via Mongoose
+    │   └── redis.js               # ioredis client + getCache / setCache / deleteCache helpers
+    ├── controllers/               # Thin request/response handlers — delegate to services
+    │   ├── adminController.js
+    │   ├── argumentController.js
+    │   ├── authController.js
+    │   ├── bookmarkReportController.js
+    │   └── debateController.js
+    ├── middleware/
+    │   ├── adminMiddleware.js     # role === 'admin' guard
+    │   ├── authMiddleware.js      # JWT verify + banned-user check → req.user
+    │   ├── cacheMiddleware.js     # Redis TTL cache intercept for GET routes
+    │   ├── errorMiddleware.js     # Global error handler + asyncHandler wrapper
+    │   ├── joiValidator.js        # Joi schema validation middleware factory
+    │   └── uploadMiddleware.js    # Multer config for avatar uploads
+    ├── models/                    # Mongoose schemas & indexes
+    │   ├── Argument.js
+    │   ├── Bookmark.js
+    │   ├── Debate.js
+    │   ├── Like.js
+    │   ├── Report.js
+    │   ├── User.js
+    │   └── Vote.js
+    ├── routes/
+    │   ├── adminRoutes.js
+    │   ├── argumentRoutes.js
+    │   ├── authRoutes.js
+    │   ├── bookmarkRoutes.js
+    │   ├── debateRoutes.js
+    │   ├── reportRoutes.js
+    │   └── userRoutes.js
+    ├── services/                  # All business logic lives here
+    │   ├── adminService.js
+    │   ├── argumentService.js
+    │   ├── authService.js
+    │   ├── bookmarkService.js
+    │   ├── debateService.js
+    │   └── reportService.js
+    ├── socket/
+    │   └── index.js               # Socket.io server init, JWT auth, debate rooms
+    ├── utils/
+    │   ├── generateTokens.js      # generateAccessToken (15m) + generateRefreshToken (7d)
+    │   └── pagination.js          # Reusable paginate() helper for Mongoose queries
+    ├── validators/
+    │   ├── argumentValidator.js
+    │   ├── authValidator.js
+    │   └── debateValidator.js
+    ├── uploads/                   # Avatar image storage (gitignored)
+    │   └── avatars/
+    ├── logs/                      # Runtime logs (gitignored)
+    │   ├── combined.log
+    │   └── error.log
+    ├── .env
+    ├── package.json
+    └── server.js                  # Entry point — middleware stack, routes, server startup
 ```
 
 ---
 
-## ⚙️ Installation & Setup
+## Getting Started
 
-### Prerequisites
-- **Node.js** v18+
-- **MongoDB** (local or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas))
-- **Redis** (local or cloud — [Upstash](https://upstash.com) free tier recommended)
+### What you need installed
+- Node.js v18+
+- MongoDB (local or MongoDB Atlas)
+- Redis (local or Upstash free tier — optional but recommended)
 
 ---
 
-### 1️⃣ Clone the repository
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/abhayvf07/internet-debate-arena.git
@@ -241,14 +241,14 @@ cd internet-debate-arena
 
 ---
 
-### 2️⃣ Backend Setup
+### 2. Backend setup
 
 ```bash
 cd server
 npm install
 ```
 
-Create a `.env` file in `server/`:
+Create a `.env` file inside `server/`:
 
 ```env
 PORT=5050
@@ -259,27 +259,27 @@ CLIENT_URL=http://localhost:5173
 REDIS_URL=redis://localhost:6379
 ```
 
-> 💡 `REDIS_URL` is optional — the app works without Redis, caching will simply be disabled.
+Note: `REDIS_URL` is optional — if you leave it out the app will just run without caching, everything still works fine.
 
 Start the backend:
 
 ```bash
-npm run dev        # development (nodemon auto-restart)
-npm start          # production
+npm run dev     # development with nodemon
+npm start       # production
 ```
 
-The server starts on `http://localhost:5050`.
+Server runs on `http://localhost:5050`.
 
 ---
 
-### 3️⃣ Frontend Setup
+### 3. Frontend setup
 
 ```bash
 cd client
 npm install
 ```
 
-Create a `.env` file in `client/`:
+Create a `.env` file inside `client/`:
 
 ```env
 VITE_API_URL=http://localhost:5050/api
@@ -289,147 +289,144 @@ VITE_SOCKET_URL=http://localhost:5050
 Start the frontend:
 
 ```bash
-npm run dev        # development — http://localhost:5173
-npm run build      # production build → dist/
-npm run preview    # preview production build locally
+npm run dev        # development — http://localhost:5173
+npm run build      # production build → dist/
+npm run preview    # preview the production build locally
 ```
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 ### `server/.env`
 
 | Variable | Required | Description |
 |---|---|---|
-| `PORT` | No | Server port (default: `5000`) |
-| `MONGO_URI` | ✅ Yes | MongoDB Atlas or local connection string |
-| `JWT_SECRET` | ✅ Yes | Secret for signing access tokens (15m expiry) |
-| `JWT_REFRESH_SECRET` | ✅ Yes | Secret for signing refresh tokens (7d expiry) |
-| `CLIENT_URL` | ✅ Yes | Frontend origin for CORS (e.g. `http://localhost:5173`) |
-| `REDIS_URL` | No | Redis connection URL — omit to disable caching |
+| `PORT` | No | Server port (default: 5000) |
+| `MONGO_URI` | Yes | MongoDB Atlas or local connection string |
+| `JWT_SECRET` | Yes | Secret for signing access tokens (15m expiry) |
+| `JWT_REFRESH_SECRET` | Yes | Secret for signing refresh tokens (7d expiry) |
+| `CLIENT_URL` | Yes | Frontend origin for CORS |
+| `REDIS_URL` | No | Redis connection URL — leave out to disable caching |
 
 ### `client/.env`
 
 | Variable | Required | Description |
 |---|---|---|
-| `VITE_API_URL` | ✅ Yes | Backend REST API base URL (e.g. `http://localhost:5050/api`) |
-| `VITE_SOCKET_URL` | ✅ Yes | Backend Socket.io URL (e.g. `http://localhost:5050`) |
+| `VITE_API_URL` | Yes | Backend REST API base URL |
+| `VITE_SOCKET_URL` | Yes | Backend Socket.io URL |
 
 ---
 
-## 📡 API Overview
+## API Overview
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/api/auth/register` | ❌ | Register new user |
-| POST | `/api/auth/login` | ❌ | Login & receive access + refresh tokens |
-| POST | `/api/auth/refresh-token` | ❌ | Exchange refresh token for new access token |
-| GET | `/api/auth/me` | ✅ | Get current user profile |
-| GET | `/api/auth/stats` | ✅ | Get current user contribution stats |
-| PUT | `/api/auth/avatar` | ✅ | Upload / update profile avatar |
-| GET | `/api/users/leaderboard` | ❌ | Get top users ranked by points |
-| GET | `/api/debates` | ❌ | List debates (filter, sort, paginate) |
-| GET | `/api/debates/search` | ❌ | Full-text search debates |
-| GET | `/api/debates/trending` | ❌ | Get top trending debates |
-| POST | `/api/debates` | ✅ | Create a new debate |
-| GET | `/api/debates/:id` | ❌ | Get single debate with vote counts |
-| DELETE | `/api/debates/:id` | ✅ | Delete debate (creator or admin) |
-| POST | `/api/debates/:id/vote` | ✅ | Vote Pro / Con — toggle supported |
-| POST | `/api/debates/:id/view` | ❌ | Increment view count |
-| GET | `/api/arguments/:debateId` | ❌ | Get all arguments (nested tree) |
-| POST | `/api/arguments` | ✅ | Post a new argument |
-| POST | `/api/arguments/reply` | ✅ | Reply to an existing argument |
-| POST | `/api/arguments/like` | ✅ | Like / unlike an argument |
-| DELETE | `/api/arguments/:id` | ✅ | Delete argument (author or admin) |
-| GET | `/api/bookmarks` | ✅ | Get user's bookmarked debates |
-| POST | `/api/bookmarks` | ✅ | Toggle bookmark on a debate |
-| POST | `/api/reports` | ✅ | Report an argument |
-| GET | `/api/admin/users` | 🔐 Admin | List all users (paginated) |
-| GET | `/api/admin/stats` | 🔐 Admin | Platform-wide stats |
-| GET | `/api/admin/reports` | 🔐 Admin | View all pending reports |
-| PATCH | `/api/admin/users/:id/ban` | 🔐 Admin | Toggle user ban |
-| DELETE | `/api/admin/debate/:id` | 🔐 Admin | Delete any debate (cascade) |
-| DELETE | `/api/admin/argument/:id` | 🔐 Admin | Delete any argument (cascade) |
+| POST | `/api/auth/register` | No | Register new user |
+| POST | `/api/auth/login` | No | Login and get tokens |
+| POST | `/api/auth/refresh-token` | No | Get new access token using refresh token |
+| GET | `/api/auth/me` | Yes | Get current user profile |
+| GET | `/api/auth/stats` | Yes | Get user contribution stats |
+| PUT | `/api/auth/avatar` | Yes | Upload or update profile avatar |
+| GET | `/api/users/leaderboard` | No | Get top users by points |
+| GET | `/api/debates` | No | List debates with filters and pagination |
+| GET | `/api/debates/search` | No | Full-text search |
+| GET | `/api/debates/trending` | No | Get trending debates |
+| POST | `/api/debates` | Yes | Create a new debate |
+| GET | `/api/debates/:id` | No | Get a single debate with vote counts |
+| DELETE | `/api/debates/:id` | Yes | Delete debate (creator or admin only) |
+| POST | `/api/debates/:id/vote` | Yes | Vote Pro or Con — toggle supported |
+| POST | `/api/debates/:id/view` | No | Increment view count |
+| GET | `/api/arguments/:debateId` | No | Get all arguments as nested tree |
+| POST | `/api/arguments` | Yes | Post a new argument |
+| POST | `/api/arguments/reply` | Yes | Reply to an argument |
+| POST | `/api/arguments/like` | Yes | Like or unlike an argument |
+| DELETE | `/api/arguments/:id` | Yes | Delete argument (author or admin) |
+| GET | `/api/bookmarks` | Yes | Get bookmarked debates |
+| POST | `/api/bookmarks` | Yes | Toggle bookmark on a debate |
+| POST | `/api/reports` | Yes | Report an argument |
+| GET | `/api/admin/users` | Admin | List all users paginated |
+| GET | `/api/admin/stats` | Admin | Platform-wide stats |
+| GET | `/api/admin/reports` | Admin | View pending reports |
+| PATCH | `/api/admin/users/:id/ban` | Admin | Ban or unban a user |
+| DELETE | `/api/admin/debate/:id` | Admin | Delete any debate with cascade |
+| DELETE | `/api/admin/argument/:id` | Admin | Delete any argument with cascade |
 
-> All endpoints are rate-limited. Auth routes: 5 req/min. Vote & like routes: 50 req/min. General routes: 100 req/min.
+All endpoints are rate-limited. Auth: 5 req/min. Votes/likes: 50 req/min. General: 100 req/min.
 
 ---
 
-## 🔑 Demo Credentials
+## Demo Credentials
+
+You can test the app with these accounts:
 
 | Role | Email | Password |
 |------|-------|----------|
 | User | user2@test.com | Abhay@07 |
 | Admin | admin@test.com | Abhay@07 |
 
-> ⚠️ Demo credentials are for testing only. Change them in production.
+These are just for testing — don't use these credentials in production.
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
-### 🏠 Home Page
-Displays trending debates, categories, and latest discussions.
+### Home Page
+Shows trending debates, categories and latest discussions.
 <img width="1920" height="923" alt="Home Page" src="screenshots/Home_Page.png" />
 
-### 🔐 Sign Up
-User registration with secure authentication.
+### Sign Up
 <img width="1920" height="919" alt="Sign Up" src="screenshots/Sign_Up.png" />
 
-### 🔑 Login
-Login with JWT authentication.
+### Login
 <img width="1920" height="919" alt="Login" src="screenshots/Login.png" />
 
-### 🗳️ Create Debate
-Create debate topics and choose Pro / Con framing.
+### Create Debate
+Pick your topic, write a description, choose Pro/Con framing.
 <img width="1920" height="923" alt="Create Debate" src="screenshots/Create_Debate.png" />
 
-### 📊 Leaderboard
+### Leaderboard
 Top contributors ranked by activity and engagement.
 <img width="1920" height="910" alt="Leaderboard" src="screenshots/Leaderboard.png" />
 
-### 👤 User Profile
-User information, debate history, and contributions.
+### User Profile
+Shows your debate history, arguments posted and contribution stats.
 <img width="1920" height="904" alt="User Profile" src="screenshots/User_Portfolio.png" />
 
-### 🛡️ Admin Dashboard
-Manage users, debates, and reports.
+### Admin Dashboard
+Manage users, debates, arguments and reports from one place.
 <img width="1920" height="929" alt="Admin Dashboard" src="screenshots/Admin_Dashboard.png" />
 
 ---
 
-## 📊 Future Improvements
+## What I Want to Add Next
 
-- [ ] AI moderation for abusive content detection
-- [ ] Debate ranking / scoring algorithm improvements
-- [ ] User reputation & badge system
+- [ ] AI moderation to flag abusive content automatically
+- [ ] Better debate ranking and scoring algorithm
+- [ ] User reputation system with badges
 - [ ] Push notifications for replies
-- [ ] Enhanced debate analytics
-- [ ] Email verification on registration
-- [ ] OAuth (Google / GitHub) login
-- [ ] Refresh token rotation (single-use refresh tokens)
+- [ ] More detailed debate analytics
+- [ ] Email verification on signup
+- [ ] OAuth login with Google and GitHub
+- [ ] Single-use refresh token rotation
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Pull requests are welcome!  
-For major changes, please open an issue first to discuss what you'd like to change.
-
----
-
-## 📄 License
-
-This project is open source. See [LICENSE](LICENSE) for details.
+PRs are welcome! If it's a big change, open an issue first so we can talk about it before you put in the work.
 
 ---
 
-## 👨‍💻 Author
+## License
 
-**Abhay Fulsavange**  
-🔗 GitHub: [https://github.com/abhayvf07](https://github.com/abhayvf07)
+Open source. See [LICENSE](LICENSE) for details.
 
 ---
 
-⭐ If you find this project useful, consider giving it a **star on GitHub**! make humanizer means look like write by fresher student project readme file with same format
+## Author
+
+**Abhay Fulsavange**
+GitHub: [https://github.com/abhayvf07](https://github.com/abhayvf07)
+
+If you liked this project, a star on GitHub would mean a lot — it genuinely keeps me motivated to keep building!
