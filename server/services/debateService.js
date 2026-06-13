@@ -7,50 +7,32 @@ const { paginate } = require("../utils/pagination");
 const { emitToDebate } = require("../socket/index");
 const { deleteCachePattern } = require("../config/redis");
 
-/**
- * Recalculate and store trendingScore for a debate
- */
+// Calculate how "hot" a debate is right now based on engagement and age
 const recalcTrendingScore = async (debateId) => {
     const debate = await Debate.findById(debateId);
     if (!debate) return;
 
-    const ageHours =
-        (Date.now() - new Date(debate.createdAt).getTime()) / (1000 * 60 * 60);
+    const ageHours = (Date.now() - new Date(debate.createdAt).getTime()) / (1000 * 60 * 60);
     const ageFactor = ageHours + 2;
 
-    const rawScore =
-        (debate.proVotes + debate.conVotes) * 2 +
-        (debate.argumentsCount || 0) * 3 +
-        (debate.views || 0);
-
+    const rawScore = (debate.proVotes + debate.conVotes) * 2 + (debate.argumentsCount || 0) * 3 + (debate.views || 0);
     const trendingScore = parseFloat((rawScore / ageFactor).toFixed(4));
 
     await Debate.updateOne({ _id: debateId }, { $set: { trendingScore } });
 };
 
-/**
- * Get all debates (paginated, filterable, sortable)
- */
+// Fetch a list of debates with filters, sorting, and pagination
 const getDebates = async (query) => {
     const filter = {};
 
-    if (query.category) {
-        filter.category = query.category;
-    }
-    if (query.tag) {
-        filter.tags = { $in: [query.tag] };
-    }
-    if (query.creator) {
-        filter.creator = query.creator;
-    }
+    if (query.category) filter.category = query.category;
+    if (query.tag) filter.tags = { $in: [query.tag] };
+    if (query.creator) filter.creator = query.creator;
 
-    // Sort options
+    // Figure out how to sort the results
     let sort = { createdAt: -1 };
-    if (query.sort === "most_voted") {
-        sort = { votesCount: -1, createdAt: -1 };
-    } else if (query.sort === "trending") {
-        sort = { trendingScore: -1, createdAt: -1 };
-    }
+    if (query.sort === "most_voted") sort = { votesCount: -1, createdAt: -1 };
+    else if (query.sort === "trending") sort = { trendingScore: -1, createdAt: -1 };
 
     const data = await paginate(Debate, filter, query, {
         populate: { path: "creator", select: "name" },
@@ -65,9 +47,7 @@ const getDebates = async (query) => {
     };
 };
 
-/**
- * Search debates using $text index, fallback to $regex
- */
+// Search debates using the text index, with a regex fallback just in case
 const searchDebates = async (query) => {
     const { q } = query;
 
@@ -77,13 +57,13 @@ const searchDebates = async (query) => {
         throw error;
     }
 
-    // Try $text search first
+    // Try finding exact word matches first
     let filter = { $text: { $search: q } };
     let textSearchUsed = true;
 
     let count = await Debate.countDocuments(filter);
     if (count === 0) {
-        // Fallback to $regex for partial matches
+        // Fall back to scanning for partial matches if nothing was found
         textSearchUsed = false;
         filter = {
             $or: [
@@ -107,9 +87,7 @@ const searchDebates = async (query) => {
     };
 };
 
-/**
- * Get trending debates — sorted by stored trendingScore
- */
+// Grab the top debates based on their trending score
 const getTrendingDebates = async (limit = 10) => {
     return Debate.find()
         .populate("creator", "name")
@@ -118,9 +96,7 @@ const getTrendingDebates = async (limit = 10) => {
         .lean();
 };
 
-/**
- * Get single debate with vote counts and user vote
- */
+// Load a specific debate and attach the user's current vote if they are logged in
 const getDebateById = async (debateId, userId) => {
     const debate = await Debate.findById(debateId)
         .populate("creator", "name")
@@ -132,22 +108,16 @@ const getDebateById = async (debateId, userId) => {
         throw error;
     }
 
-    // Check if current user has voted
     let userVoteSide = null;
     if (userId) {
         const userVote = await Vote.findOne({ userId, debateId: debate._id });
         if (userVote) userVoteSide = userVote.side;
     }
 
-    return {
-        ...debate,
-        userVoteSide,
-    };
+    return { ...debate, userVoteSide };
 };
 
-/**
- * Increment view count — atomic $inc
- */
+// Bump the view count when someone opens the debate
 const incrementView = async (debateId) => {
     const debate = await Debate.findByIdAndUpdate(
         debateId,
@@ -164,19 +134,16 @@ const incrementView = async (debateId) => {
         throw error;
     }
 
-    // Recalculate trending score
     await recalcTrendingScore(debateId);
 
-    // Invalidate caches
+    // Clear caches so the new view count shows up
     await deleteCachePattern("debates:*");
     await deleteCachePattern(`debate:single:*${debateId}*`);
 
     return { views: debate.views };
 };
 
-/**
- * Vote on a debate (Pro or Con) — toggle logic with atomic counters
- */
+// Handle Pro/Con voting (adding, removing, or switching sides)
 const voteOnDebate = async (debateId, side, userId) => {
     if (!side || !["Pro", "Con"].includes(side)) {
         const error = new Error("side must be Pro or Con");
@@ -192,12 +159,10 @@ const voteOnDebate = async (debateId, side, userId) => {
     }
 
     const existingVote = await Vote.findOne({ userId, debateId });
-
     const sideField = side === "Pro" ? "proVotes" : "conVotes";
-    const oppField = side === "Pro" ? "conVotes" : "proVotes";
 
     if (!existingVote) {
-        // First vote — create it, $inc the right counter
+        // Add a brand new vote
         await Vote.create({ userId, debateId, side });
         await Debate.updateOne(
             { _id: debateId },
@@ -207,7 +172,7 @@ const voteOnDebate = async (debateId, side, userId) => {
             }
         );
     } else if (existingVote.side === side) {
-        // Same side — remove vote (toggle off)
+        // Remove the vote if they clicked the same side again
         await existingVote.deleteOne();
         await Debate.updateOne(
             { _id: debateId },
@@ -217,7 +182,7 @@ const voteOnDebate = async (debateId, side, userId) => {
             }
         );
     } else {
-        // Different side — switch
+        // Switch their vote to the other side
         const oldField = existingVote.side === "Pro" ? "proVotes" : "conVotes";
         existingVote.side = side;
         await existingVote.save();
@@ -230,10 +195,8 @@ const voteOnDebate = async (debateId, side, userId) => {
         );
     }
 
-    // Recalculate trending score
     await recalcTrendingScore(debateId);
 
-    // Get updated debate for response
     const updated = await Debate.findById(debateId).lean();
     const updatedVote = await Vote.findOne({ userId, debateId });
 
@@ -243,11 +206,10 @@ const voteOnDebate = async (debateId, side, userId) => {
         userVoteSide: updatedVote ? updatedVote.side : null,
     };
 
-    // Invalidate caches BEFORE sending event
+    // Clear cache before pushing live updates
     await deleteCachePattern("debates:*");
     await deleteCachePattern(`debate:single:*${debateId}*`);
 
-    // Emit real-time event — wrapped so socket failure doesn't crash vote flow
     try {
         emitToDebate(debateId, "voteUpdated", result);
     } catch (err) {
@@ -257,16 +219,14 @@ const voteOnDebate = async (debateId, side, userId) => {
     return result;
 };
 
-/**
- * Create a debate
- */
+// Start a new debate
 const createDebate = async ({ title, description, category, tags, userId }) => {
     let parsedTags = [];
     if (tags) {
         parsedTags = Array.isArray(tags)
             ? tags.map((t) => t.trim()).filter(Boolean)
             : tags.split(",").map((t) => t.trim()).filter(Boolean);
-        parsedTags = parsedTags.slice(0, 10);
+        parsedTags = parsedTags.slice(0, 10); // Cap it at 10 tags
     }
 
     const debate = await Debate.create({
@@ -278,15 +238,12 @@ const createDebate = async ({ title, description, category, tags, userId }) => {
     });
 
     const populated = await debate.populate("creator", "name");
-
     await deleteCachePattern("debates:*");
 
     return populated;
 };
 
-/**
- * Delete a debate (admin or creator)
- */
+// Delete a debate and safely clean up all its attached arguments, votes, etc.
 const deleteDebate = async (debateId, user) => {
     const debate = await Debate.findById(debateId);
 
@@ -296,16 +253,16 @@ const deleteDebate = async (debateId, user) => {
         throw error;
     }
 
-    // Allow admin or the creator to delete
+    // Only let the creator or an admin delete it
     if (user.role !== "admin" && debate.creator.toString() !== user._id.toString()) {
         const error = new Error("Not authorized");
         error.statusCode = 403;
         throw error;
     }
 
-    // Clean up related data
     const argIds = await Argument.find({ debateId: debate._id }).distinct("_id");
 
+    // Nuke everything related to this debate
     await Promise.all([
         Argument.deleteMany({ debateId: debate._id }),
         Bookmark.deleteMany({ debateId: debate._id }),
@@ -313,6 +270,7 @@ const deleteDebate = async (debateId, user) => {
         debate.deleteOne(),
     ]);
 
+    // Also clean up likes on those deleted arguments
     if (argIds.length > 0) {
         await Like.deleteMany({ argumentId: { $in: argIds } });
     }

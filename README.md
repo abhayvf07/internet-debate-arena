@@ -4,6 +4,15 @@ A full-stack debate platform I built using the MERN stack where users can create
 
 ---
 
+## 🔗 Live Demo
+
+| | Link |
+|---|---|
+| **Frontend** | [https://internet-debate-arena.vercel.app](https://internet-debate-arena.vercel.app) |
+| **Backend API** | [https://internet-debate-arena.onrender.com](https://internet-debate-arena.onrender.com) |
+
+---
+
 ## Why I Built This
 
 I always felt like online comment sections are just chaos — people talking past each other with no structure. I wanted to build something that actually encourages people to think and present their side clearly. So I made a platform where every debate has two defined sides and you have to actually argue for one.

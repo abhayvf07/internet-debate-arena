@@ -2,10 +2,7 @@ const jwt = require("jsonwebtoken");
 
 let io = null;
 
-/**
- * Initialize Socket.io server
- * @param {import("http").Server} server — HTTP server instance
- */
+// Start up the real-time Socket.io server
 const initSocket = (server) => {
     const { Server } = require("socket.io");
 
@@ -16,33 +13,34 @@ const initSocket = (server) => {
         },
     });
 
-    // JWT authentication middleware for sockets
+    // Check for a login token, but still allow guests to connect as read-only
     io.use((socket, next) => {
         const token = socket.handshake.auth?.token;
         if (!token) {
-            return next(); // Allow unauthenticated connections (read-only)
+            return next(); 
         }
+        
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             socket.userId = decoded.id;
             next();
         } catch {
-            return next(); // Treat as unauthenticated
+            return next(); // If the token is fake/expired, just treat them as a guest
         }
     });
 
     io.on("connection", (socket) => {
         console.debug(`Socket connected: ${socket.id}`);
 
-        // Join a debate room
-        socket.on("joinDebate", (debateId) => {
-            if (debateId) {
+        // Join a debate room (Strict check: must be a valid MongoDB ObjectId!)
+        socket.on('joinDebate', (debateId) => {
+            if (debateId && /^[a-f\d]{24}$/i.test(debateId)) { 
                 socket.join(`debate:${debateId}`);
                 console.debug(`Socket ${socket.id} joined debate:${debateId}`);
             }
         });
 
-        // Leave a debate room
+        // Leave the room when the user exits the debate page
         socket.on("leaveDebate", (debateId) => {
             if (debateId) {
                 socket.leave(`debate:${debateId}`);
@@ -58,14 +56,10 @@ const initSocket = (server) => {
     return io;
 };
 
-/**
- * Get the Socket.io instance
- */
+// Expose the socket instance so we can grab it in other files
 const getIO = () => io;
 
-/**
- * Emit event to a debate room
- */
+// Broadcast a live update to everyone currently viewing a specific debate
 const emitToDebate = (debateId, event, data) => {
     if (io) {
         io.to(`debate:${debateId}`).emit(event, data);

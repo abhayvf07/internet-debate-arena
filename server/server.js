@@ -1,9 +1,14 @@
-// .env file access
+// Load env vars
 require("dotenv").config(); 
+
+// Crash if frontend URL is missing in production
+if (process.env.NODE_ENV === 'production' && !process.env.CLIENT_URL) {
+  console.error('FATAL: CLIENT_URL must be set in production');
+  process.exit(1);
+}
 
 const express = require("express");
 const connectDB = require("./config/db");
-
 const http = require("http");
 const cors = require("cors");
 const path = require("path");
@@ -16,52 +21,53 @@ const xss = require("xss-clean");
 const { errorHandler } = require("./middleware/errorMiddleware");
 const { initSocket } = require("./socket/index");
 
-// Database connect function const 
 const app = express();
-// Create HTTP server
 const server = http.createServer(app);
 
-// Socket.io start
+// Setup real-time sockets
 initSocket(server);
 
-// Security Middleware 
+// Add basic security headers
 app.use(helmet({ crossOriginResourcePolicy: false }));
-// Enable Frontend access 
+
+// Allow frontend to connect
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
 }));
-// Data sanitization
-app.use(mongoSanitize()); // MongoDB malicious data
-app.use(xss()); // XSS malicious scripts
 
-// Request logging to console
+// Prevent database injection and XSS attacks
+app.use(mongoSanitize());
+app.use(xss());
+
+// Log requests for debugging
 app.use(morgan(":method :url :status :response-time ms"));
 
-// Body parsers
-app.use(express.json()); // JSON data read
-app.use(express.urlencoded({ extended: false })); // Form data read
+// Parse JSON and form data
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// uploaded files access
+// Serve uploaded files publicly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ── Rate Limiters ──
+// Block spam to protect the server
 const authLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 5, // Stricter for auth
+    windowMs: 60 * 1000, 
+    max: 5, // Strict limit for logins
     message: { message: "Too many auth requests, please try again later" },
     standardHeaders: true,
     legacyHeaders: false,
 });
+
 const generalLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 100,
+    max: 100, // Normal limit for APIs
     message: { message: "Too many requests, please try again later" },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// ── API Routes ──
+// Setup routes
 app.use("/api/auth", authLimiter, require("./routes/authRoutes"));
 app.use("/api/users", generalLimiter, require("./routes/userRoutes"));
 app.use("/api/debates", generalLimiter, require("./routes/debateRoutes"));
@@ -70,22 +76,22 @@ app.use("/api/bookmarks", generalLimiter, require("./routes/bookmarkRoutes"));
 app.use("/api/reports", generalLimiter, require("./routes/reportRoutes"));
 app.use("/api/admin", generalLimiter, require("./routes/adminRoutes"));
 
-// Health check route
+// Quick check to see if API is alive
 app.get("/", (req, res) => {
     res.json({ message: "Internet Debate Arena API is running" });
 });
 
-// Catch unknown routes and return a 404 JSON response
+// Handle unknown URLs
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
 
-// Global Error Handler
+// Catch all server errors
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Start server after DB connection is established to avoid handling requests without DB access
+// Connect to DB before starting the server
 const startServer = async () => {
   try {
     await connectDB();
@@ -94,7 +100,7 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error(error.message);
-    process.exit(1);
+    process.exit(1); 
   }
 };
 

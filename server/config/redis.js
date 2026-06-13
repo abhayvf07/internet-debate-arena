@@ -2,8 +2,8 @@ const Redis = require("ioredis");
 
 let client = null;
 
+// Connect to Redis if we have a URL setup, otherwise just run without caching
 if (process.env.REDIS_URL) {
-    // Create client
     client = new Redis(process.env.REDIS_URL, {
         maxRetriesPerRequest: 3,
         retryDelayOnFailover: 300,
@@ -15,7 +15,6 @@ if (process.env.REDIS_URL) {
         console.warn(`Redis error: ${err.message}`);
     });
 
-    // Attempt connection
     client.connect().catch((err) => {
         console.warn(`Redis connection failed: ${err.message}. Caching disabled.`);
         client = null;
@@ -24,41 +23,43 @@ if (process.env.REDIS_URL) {
     console.warn("REDIS_URL not set — caching disabled");
 }
 
-// Get cached value by key
+// Grab saved data from the cache
 const getCache = async (key) => {
     if (!client) return null;
     try {
         const data = await client.get(key);
         return data ? JSON.parse(data) : null;
     } catch {
-        return null;
+        return null; // Returning null is safe here so the app just fetches fresh data instead
     }
 };
 
-// Set cache with TTL (seconds)
+// Save data to the cache with an expiration timer (TTL in seconds)
 const setCache = async (key, data, ttl) => {
     if (!client) return;
     try {
         await client.setex(key, ttl, JSON.stringify(data));
-    } catch {
-        // Silently fail
+    } catch (err) {
+        // Log the error for monitoring, but don't crash the app
+        console.warn(`Cache write failed for key "${key}": ${err.message}`);
     }
 };
 
-// Delete single cache by key
+// Remove a specific cached item
 const deleteCache = async (key) => {
     if (!client) return;
     try {
         await client.del(key);
-    } catch {
-        // Silently fail
+    } catch (err) {
+        console.warn(`Cache delete failed for key "${key}": ${err.message}`);
     }
 };
 
-// Delete multiple cache keys using a pattern with SCAN
+// Find and delete a bunch of cached items using a wildcard (like "debates:*")
 async function deleteCachePattern(pattern) {
     if (!client) return;
     try {
+        // Scan in small batches so we don't lock up the database
         const stream = client.scanStream({
             match: pattern,
             count: 100
@@ -70,7 +71,7 @@ async function deleteCachePattern(pattern) {
             }
         }
     } catch (err) {
-        console.error(`Error deleting cache pattern ${pattern}: ${err.message}`);
+        console.error(`Error deleting cache pattern "${pattern}": ${err.message}`);
     }
 }
 
