@@ -1,3 +1,5 @@
+// Report routes — create (user), list and resolve (admin only)
+
 const express = require("express");
 const {
     createReport,

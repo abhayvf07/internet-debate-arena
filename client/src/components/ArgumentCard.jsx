@@ -1,3 +1,5 @@
+// Argument card — displays argument text, likes, report, replies
+
 import LikeButton from './VoteButtons';
 import ReplySection from './ReplySection';
 import { useState } from 'react';
@@ -14,6 +16,7 @@ export default function ArgumentCard({ argument, liked, onLike, onReplyAdded }) 
     const isPro = argument.side === 'Pro';
     const isOwnArgument = user && argument.author?._id === user._id;
 
+    // Report an argument
     const handleReport = async () => {
         if (!reason.trim()) return;
         try {
@@ -25,12 +28,13 @@ export default function ArgumentCard({ argument, liked, onLike, onReplyAdded }) 
         }
     };
 
+    // Delete own argument
     const handleDelete = async () => {
         if (!window.confirm("Are you sure you want to delete this?")) return;
         try {
             await deleteArgument(argument._id);
             toast.success("Argument deleted");
-            if (onReplyAdded) onReplyAdded(); // Triggers a refetch
+            if (onReplyAdded) onReplyAdded();
         } catch (err) {
             toast.error("Failed to delete");
             console.error("Delete failed:", err);
@@ -71,7 +75,7 @@ export default function ArgumentCard({ argument, liked, onLike, onReplyAdded }) 
                     />
                 )}
 
-                {/* Show like count for own arguments + Delete button */}
+                {/* Own argument: show count + delete */}
                 {isOwnArgument && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <span style={{
@@ -93,7 +97,7 @@ export default function ArgumentCard({ argument, liked, onLike, onReplyAdded }) 
                     </div>
                 )}
 
-                {/* Show count for guests */}
+                {/* Guest like count */}
                 {!user && argument.likes > 0 && (
                     <span style={{
                         fontSize: '0.85rem', color: 'var(--text-muted)',
@@ -104,7 +108,7 @@ export default function ArgumentCard({ argument, liked, onLike, onReplyAdded }) 
                 )}
             </div>
 
-            {/* Report */}
+            {/* Report button */}
             {user && !reported && !isOwnArgument && (
                 <div style={{ marginTop: '0.5rem' }}>
                     {!showReport ? (

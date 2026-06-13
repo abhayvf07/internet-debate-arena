@@ -1,3 +1,5 @@
+// Reply section — nested replies with add/delete for an argument
+
 import { useState } from 'react';
 import { replyToArgument, deleteArgument } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +11,7 @@ export default function ReplySection({ argumentId, replies = [], onReplyAdded })
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Submit a reply
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!text.trim()) return;
@@ -26,6 +29,7 @@ export default function ReplySection({ argumentId, replies = [], onReplyAdded })
         }
     };
 
+    // Delete own reply
     const handleDeleteReply = async (replyId) => {
         if (!window.confirm("Delete this reply?")) return;
         try {
@@ -77,7 +81,7 @@ export default function ReplySection({ argumentId, replies = [], onReplyAdded })
                 </div>
             )}
 
-            {/* Reply toggle */}
+            {/* Reply toggle + form */}
             {user && (
                 <>
                     <button

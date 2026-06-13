@@ -1,3 +1,5 @@
+// Auth context — manages user state, login, logout, and error handling
+
 import { createContext, useContext, useReducer, useEffect } from 'react';
 
 const AuthContext = createContext();
@@ -8,6 +10,7 @@ const initialState = {
     error: null,
 };
 
+// Reducer for auth state transitions
 function authReducer(state, action) {
     switch (action.type) {
         case 'AUTH_START':
@@ -28,7 +31,7 @@ function authReducer(state, action) {
 export function AuthProvider({ children }) {
     const [state, dispatch] = useReducer(authReducer, initialState);
 
-    // Persist user to localStorage
+    // Sync user to localStorage
     useEffect(() => {
         if (state.user) {
             localStorage.setItem('user', JSON.stringify(state.user));

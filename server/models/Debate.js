@@ -1,6 +1,7 @@
+// Debate schema — topics with categories, tags, vote counts, and trending score
+
 const mongoose = require("mongoose");
 
-// All the allowed topics for a debate
 const CATEGORIES = [
     "Technology", "Politics", "Society", "Economy", "Education",
     "Environment", "Science", "Ethics", "Business", "Entertainment",
@@ -13,7 +14,7 @@ const debateSchema = new mongoose.Schema(
             type: String,
             required: [true, "Title is required"],
             trim: true,
-            maxlength: 150, // Keep it snappy
+            maxlength: 150,
         },
         description: {
             type: String,
@@ -23,41 +24,35 @@ const debateSchema = new mongoose.Schema(
         },
         category: {
             type: String,
-            enum: CATEGORIES, // Must match the list above
+            enum: CATEGORIES,
             default: "Other",
         },
         tags: {
-            type: [String], // Optional keywords to help with searching
+            type: [String],
             default: [],
         },
         creator: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Links to the user who started it
+            ref: "User",
             required: true,
         },
         
-        // --- Stats Tracking ---
+        // Stats
         views: { type: Number, default: 0 },
-        votesCount: { type: Number, default: 0 }, // Total votes
+        votesCount: { type: Number, default: 0 },
         proVotes: { type: Number, default: 0 },
         conVotes: { type: Number, default: 0 },
-        argumentsCount: { type: Number, default: 0 }, // Total replies
-        
-        // Used by our algorithm to figure out what's hot right now
+        argumentsCount: { type: Number, default: 0 },
         trendingScore: { type: Number, default: 0 },
-        
-        // Helps us push recently active debates back to the top
         lastActivityAt: { type: Date, default: Date.now },
     },
-    { timestamps: true } // Auto-adds createdAt and updatedAt
+    { timestamps: true }
 );
 
-// --- Indexes for faster database queries ---
-
-// Our wildcard text index to power the search bar!
+// Text search index
 debateSchema.index({ title: "text", description: "text", tags: "text" });
 
-// Speed up sorting by trending, category, and user profiles
+// Sort indexes
 debateSchema.index({ trendingScore: -1 });
 debateSchema.index({ category: 1, createdAt: -1 });
 debateSchema.index({ creator: 1 });

@@ -1,3 +1,5 @@
+// Argument routes — CRUD, replies, and likes with rate limiting
+
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const {
@@ -11,6 +13,7 @@ const { protect } = require("../middleware/authMiddleware");
 const { validate } = require("../middleware/joiValidator");
 const { createArgumentSchema, replyArgumentSchema } = require("../validators/argumentValidator");
 
+// 50 likes per minute per IP
 const likeLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 50,

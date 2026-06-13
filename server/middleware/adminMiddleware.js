@@ -1,7 +1,5 @@
-/**
- * Admin-only access guard
- * Must be used AFTER the protect (auth) middleware
- */
+// Admin-only route guard — use after auth middleware
+
 const adminOnly = (req, res, next) => {
     if (req.user && req.user.role === "admin") {
         next();

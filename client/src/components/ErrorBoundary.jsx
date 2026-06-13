@@ -1,3 +1,5 @@
+// Error boundary — catches React render errors and shows a recovery UI
+
 import React from 'react';
 
 class ErrorBoundary extends React.Component {
@@ -65,7 +67,7 @@ class ErrorBoundary extends React.Component {
                             An unexpected error occurred. Please try reloading the page.
                         </p>
 
-                        {/* Show error details in development */}
+                        {/* Dev-only error details */}
                         {import.meta.env.DEV && this.state.error && (
                             <details style={{
                                 textAlign: 'left',

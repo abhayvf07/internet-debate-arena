@@ -1,3 +1,5 @@
+// Debate page — individual debate view with socket-powered arguments and voting
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -22,7 +24,6 @@ export default function DebatePage() {
     const [bookmarked, setBookmarked] = useState(false);
     const [showAnalytics, setShowAnalytics] = useState(false);
 
-    // Socket.io integration
     useEffect(() => {
         const socket = getSocket(user?.accessToken || user?.token);
 
@@ -30,11 +31,9 @@ export default function DebatePage() {
             socket.emit("joinDebate", id);
         };
 
-        // If already connected (returning to a debate), join immediately
         if (socket.connected) {
             socket.emit("joinDebate", id);
         } else {
-            // Otherwise wait for the connect event
             socket.on("connect", handleConnect);
         }
 
@@ -50,19 +49,16 @@ export default function DebatePage() {
         });
 
         socket.on('argumentAdded', (newArgument) => {
-            // Don't update via socket if this user posted it — React Query mutation already handles it
             if (newArgument.author?._id === user?._id) return;
 
             queryClient.setQueryData(['arguments', id], (old) => {
                 if (!old) return old;
-                // If it's a top-level argument
                 if (!newArgument.parentId) {
                     return {
                         ...old,
                         arguments: [newArgument, ...old.arguments]
                     };
                 }
-                // If it's a reply, find parent and push
                 const newArgs = old.arguments.map(arg => {
                     if (arg._id === newArgument.parentId) {
                         return { ...arg, replies: [...(arg.replies || []), newArgument] };
@@ -81,12 +77,10 @@ export default function DebatePage() {
         };
     }, [id, user, queryClient]);
 
-    // Track view
     useEffect(() => {
         incrementView(id).catch(() => { });
     }, [id]);
 
-    // Queries
     const { data: debate, isLoading: loadingDebate } = useQuery({
         queryKey: ['debate', id],
         queryFn: async () => {
@@ -104,7 +98,6 @@ export default function DebatePage() {
         initialData: { arguments: [], userLikes: {} },
     });
 
-    // Mutations
     const addArgumentMutation = useMutation({
         mutationFn: (data) => createArgument(data),
         onSuccess: () => {
@@ -125,7 +118,6 @@ export default function DebatePage() {
                 userVoteSide: res.data.userVoteSide,
             }));
             
-            // Handle toast alert if backend sends one
             if (res.data.alert) toast(res.data.alert);
             else toast.success(res.data.userVoteSide ? `Voted ${res.data.userVoteSide}!` : 'Vote removed');
         },
@@ -142,7 +134,7 @@ export default function DebatePage() {
         try {
             const res = await likeArgument(argumentId);
             toast.success(res.data.liked ? '❤️ Liked!' : 'Unliked');
-            if (res.data.alert) toast(res.data.alert); // Lightweight toast alert from backend
+            if (res.data.alert) toast(res.data.alert);
             queryClient.invalidateQueries(['arguments', id]);
         } catch (err) {
             if (err.response?.status === 403) {
@@ -194,7 +186,6 @@ export default function DebatePage() {
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-            {/* Debate Header */}
             <div className="glass animate-in" style={{ padding: '2rem', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
                     <div style={{ flex: 1 }}>
@@ -205,7 +196,6 @@ export default function DebatePage() {
                             </span>
                         </div>
 
-                        {/* Tags */}
                         {debate.tags && debate.tags.length > 0 && (
                             <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                                 {debate.tags.map((tag) => (
@@ -233,12 +223,10 @@ export default function DebatePage() {
                     )}
                 </div>
 
-                {/* Score bar */}
                 <div style={{ marginTop: '1.5rem' }}>
                     <ScoreBar proScore={debate.proVotes || 0} conScore={debate.conVotes || 0} />
                 </div>
 
-                {/* Vote buttons */}
                 {user && (
                     <div style={{
                         display: 'flex', justifyContent: 'center', gap: '1rem',
@@ -260,7 +248,6 @@ export default function DebatePage() {
                     </p>
                 )}
                 
-                {/* Analytics Toggle */}
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
                     <button 
                         onClick={() => setShowAnalytics(!showAnalytics)} 
@@ -272,7 +259,6 @@ export default function DebatePage() {
                 </div>
             </div>
 
-            {/* Analytics Section */}
             {showAnalytics && (
                 <DebateAnalytics 
                     proVotes={debate.proVotes}
@@ -282,7 +268,6 @@ export default function DebatePage() {
                 />
             )}
 
-            {/* Add argument form */}
             {user && (
                 <div className="glass animate-in" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>
@@ -338,7 +323,6 @@ export default function DebatePage() {
                 </div>
             )}
 
-            {/* Two-column arguments */}
             {loadingArgs ? (
                 <PageSkeleton />
             ) : (
@@ -347,7 +331,6 @@ export default function DebatePage() {
                     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                     gap: '2rem',
                 }}>
-                    {/* Pro column */}
                     <div>
                         <h2 style={{
                             fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem',
@@ -370,7 +353,6 @@ export default function DebatePage() {
                         )}
                     </div>
 
-                    {/* Con column */}
                     <div>
                         <h2 style={{
                             fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem',

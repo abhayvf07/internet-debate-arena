@@ -1,3 +1,5 @@
+// Create debate page — form to start a new debate
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDebate } from '../services/api';

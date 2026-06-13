@@ -1,3 +1,5 @@
+// Report schema — user reports on arguments with pending/resolved status
+
 const mongoose = require("mongoose");
 
 const reportSchema = new mongoose.Schema(
@@ -27,10 +29,7 @@ const reportSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Fast report listing by status
 reportSchema.index({ status: 1, createdAt: -1 });
-
-// Prevent duplicate reports — one report per user per argument
 reportSchema.index({ userId: 1, argumentId: 1 }, { unique: true });
 
 module.exports = mongoose.model("Report", reportSchema);

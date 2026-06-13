@@ -1,3 +1,5 @@
+// Vote schema — one Pro/Con vote per user per debate
+
 const mongoose = require("mongoose");
 
 const voteSchema = new mongoose.Schema(
@@ -21,9 +23,7 @@ const voteSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Each user can only vote once per debate
 voteSchema.index({ userId: 1, debateId: 1 }, { unique: true });
-// Fast vote counting per debate
 voteSchema.index({ debateId: 1, side: 1 });
 
 module.exports = mongoose.model("Vote", voteSchema);

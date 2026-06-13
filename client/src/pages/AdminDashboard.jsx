@@ -1,3 +1,5 @@
+// Admin Dashboard — tools for moderation, ban user, and site stats
+
 import { useState, useEffect } from 'react';
 import { adminGetReports, resolveReport, adminGetUsers, adminDeleteDebate, adminDeleteArgument, adminBanUser, adminGetStats } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -114,7 +116,6 @@ export default function AdminDashboard() {
                 Manage users, reports, and content.
             </p>
 
-            {/* Stats Overview */}
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
                 <div style={statCardStyle}>
                     <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-light)' }}>
@@ -136,7 +137,6 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Tabs */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
                 <button style={tabStyle(tab === 'reports')} onClick={() => setTab('reports')}>
                     🚩 Reports ({reports.length})
@@ -146,7 +146,6 @@ export default function AdminDashboard() {
                 </button>
             </div>
 
-            {/* Reports Tab */}
             {tab === 'reports' && (
                 <>
                     {reports.length === 0 ? (
@@ -216,7 +215,6 @@ export default function AdminDashboard() {
                 </>
             )}
 
-            {/* Users Tab */}
             {tab === 'users' && (
                 <div className="glass" style={{ padding: '1.5rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

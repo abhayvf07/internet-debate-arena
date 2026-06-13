@@ -1,5 +1,8 @@
+// Joi schemas for register and login validation
+
 const Joi = require("joi");
 
+// Validate registration: name, email, password
 const registerValidator = Joi.object({
     body: Joi.object({
         name: Joi.string().trim().required().max(50).messages({
@@ -19,6 +22,7 @@ const registerValidator = Joi.object({
     params: Joi.object().unknown(true)
 });
 
+// Validate login: email, password
 const loginValidator = Joi.object({
     body: Joi.object({
         email: Joi.string().trim().required().email().messages({

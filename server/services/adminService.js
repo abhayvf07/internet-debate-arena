@@ -1,3 +1,5 @@
+// Admin service — user management, content moderation, and platform stats
+
 const User = require("../models/User");
 const Debate = require("../models/Debate");
 const Argument = require("../models/Argument");
@@ -7,9 +9,18 @@ const Bookmark = require("../models/Bookmark");
 const Report = require("../models/Report");
 const { paginate } = require("../utils/pagination");
 
-/**
- * Get all users (paginated)
- */
+// Recursively collect all descendant argument IDs
+const collectAllDescendantIds = async (parentId) => {
+    const childIds = await Argument.find({ parentId }).distinct("_id");
+    let allIds = [...childIds];
+    for (const childId of childIds) {
+        const deeperIds = await collectAllDescendantIds(childId);
+        allIds = allIds.concat(deeperIds);
+    }
+    return allIds;
+};
+
+// Get all users paginated
 const getAllUsers = async (query) => {
     const data = await paginate(User, {}, query, {
         select: "-password -refreshToken",
@@ -25,9 +36,7 @@ const getAllUsers = async (query) => {
     };
 };
 
-/**
- * Delete a debate (admin) — cascade delete
- */
+// Delete a debate and all related data
 const adminDeleteDebate = async (debateId) => {
     const debate = await Debate.findById(debateId);
     if (!debate) {
@@ -55,9 +64,7 @@ const adminDeleteDebate = async (debateId) => {
     return { message: "Debate and related data deleted" };
 };
 
-/**
- * Delete an argument (admin) — cascade delete
- */
+// Delete an argument and all nested replies recursively
 const adminDeleteArgument = async (argumentId) => {
     const argument = await Argument.findById(argumentId);
     if (!argument) {
@@ -66,28 +73,27 @@ const adminDeleteArgument = async (argumentId) => {
         throw error;
     }
 
-    const replyIds = await Argument.find({ parentId: argument._id }).distinct("_id");
-    const allArgIds = [argument._id, ...replyIds];
+    // Collect all descendants (grandchildren, great-grandchildren, etc.)
+    const descendantIds = await collectAllDescendantIds(argument._id);
+    const allArgIds = [argument._id, ...descendantIds];
 
+    // Delete the argument, all descendants, and their likes/reports
     await Promise.all([
-        Argument.deleteMany({ parentId: argument._id }),
+        Argument.deleteMany({ _id: { $in: allArgIds } }),
         Like.deleteMany({ argumentId: { $in: allArgIds } }),
         Report.deleteMany({ argumentId: { $in: allArgIds } }),
-        argument.deleteOne(),
     ]);
 
-    // Decrement debate's argumentsCount atomically
+    // Update debate argument count
     await Debate.updateOne(
         { _id: argument.debateId },
-        { $inc: { argumentsCount: -(1 + replyIds.length) } }
+        { $inc: { argumentsCount: -allArgIds.length } }
     );
 
     return { message: "Argument and related data deleted" };
 };
 
-/**
- * Get all pending reports (admin)
- */
+// Get all pending reports
 const getReports = async () => {
     return Report.find({ status: "pending" })
         .populate("userId", "name email")
@@ -98,9 +104,7 @@ const getReports = async () => {
         .sort({ createdAt: -1 });
 };
 
-/**
- * Ban a user
- */
+// Toggle ban status on a user
 const banUser = async (userId) => {
     const user = await User.findById(userId);
     if (!user) {
@@ -115,8 +119,8 @@ const banUser = async (userId) => {
         throw error;
     }
 
-    user.isBanned = !user.isBanned; // Toggle ban
-    user.refreshToken = null; // Invalidate sessions
+    user.isBanned = !user.isBanned;
+    user.refreshToken = null;
     await user.save();
 
     return {
@@ -125,9 +129,7 @@ const banUser = async (userId) => {
     };
 };
 
-/**
- * Get admin stats overview
- */
+// Get platform-wide stats
 const getAdminStats = async () => {
     const [totalUsers, totalDebates, pendingReports] = await Promise.all([
         User.countDocuments(),

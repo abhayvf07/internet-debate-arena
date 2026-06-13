@@ -1,4 +1,5 @@
-// Load env vars
+// Server entry point — middleware stack, routes, and startup
+
 require("dotenv").config(); 
 
 // Crash if frontend URL is missing in production
@@ -24,36 +25,36 @@ const { initSocket } = require("./socket/index");
 const app = express();
 const server = http.createServer(app);
 
-// Setup real-time sockets
+// Real-time sockets
 initSocket(server);
 
-// Add basic security headers
+// Security headers
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
-// Allow frontend to connect
+// CORS
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
 }));
 
-// Prevent database injection and XSS attacks
+// Sanitization
 app.use(mongoSanitize());
 app.use(xss());
 
-// Log requests for debugging
+// Request logging
 app.use(morgan(":method :url :status :response-time ms"));
 
-// Parse JSON and form data
+// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve uploaded files publicly
+// Static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Block spam to protect the server
+// Rate limiters
 const authLimiter = rateLimit({
     windowMs: 60 * 1000, 
-    max: 5, // Strict limit for logins
+    max: 5,
     message: { message: "Too many auth requests, please try again later" },
     standardHeaders: true,
     legacyHeaders: false,
@@ -61,13 +62,13 @@ const authLimiter = rateLimit({
 
 const generalLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 100, // Normal limit for APIs
+    max: 100,
     message: { message: "Too many requests, please try again later" },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// Setup routes
+// Routes
 app.use("/api/auth", authLimiter, require("./routes/authRoutes"));
 app.use("/api/users", generalLimiter, require("./routes/userRoutes"));
 app.use("/api/debates", generalLimiter, require("./routes/debateRoutes"));
@@ -76,22 +77,22 @@ app.use("/api/bookmarks", generalLimiter, require("./routes/bookmarkRoutes"));
 app.use("/api/reports", generalLimiter, require("./routes/reportRoutes"));
 app.use("/api/admin", generalLimiter, require("./routes/adminRoutes"));
 
-// Quick check to see if API is alive
+// Health check
 app.get("/", (req, res) => {
     res.json({ message: "Internet Debate Arena API is running" });
 });
 
-// Handle unknown URLs
+// 404 handler
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
 
-// Catch all server errors
+// Error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Connect to DB before starting the server
+// Start server after DB connects
 const startServer = async () => {
   try {
     await connectDB();

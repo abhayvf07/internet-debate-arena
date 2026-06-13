@@ -1,3 +1,5 @@
+// Debate card — preview card for a debate with category, tags, stats
+
 import { Link } from 'react-router-dom';
 import { formatDate } from '../utils/helpers';
 

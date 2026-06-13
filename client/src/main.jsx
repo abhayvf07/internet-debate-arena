@@ -1,3 +1,5 @@
+// App entry point — React Query provider wraps the app
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

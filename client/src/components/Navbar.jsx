@@ -1,3 +1,5 @@
+// Navbar — logo, search, theme toggle, auth links, and admin access
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -41,8 +43,6 @@ export default function Navbar() {
                 </span>
             </Link>
 
-            {/* Search bar removed per user request */}
-
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
                 {/* Theme toggle */}
                 <button
@@ -54,7 +54,7 @@ export default function Navbar() {
                     {theme === 'dark' ? '☀️' : '🌙'}
                 </button>
 
-                {/* Leaderboard link */}
+                {/* Leaderboard */}
                 <Link to="/leaderboard" className="btn-ghost" style={{ textDecoration: 'none', fontSize: '0.85rem' }}>
                     🏆
                 </Link>

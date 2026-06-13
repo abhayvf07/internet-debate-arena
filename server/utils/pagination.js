@@ -1,12 +1,5 @@
-/**
- * Reusable pagination helper
- *
- * @param {Object} model    — Mongoose model
- * @param {Object} filter   — query filter
- * @param {Object} query    — req.query (page, limit)
- * @param {Object} options  — { populate, sort, select, maxLimit (default 50) }
- * @returns { results, page, totalPages, total }
- */
+// Reusable pagination helper for Mongoose queries
+
 const paginate = async (model, filter = {}, query = {}, options = {}) => {
     const page = Math.max(1, parseInt(query.page) || 1);
     const maxLimit = options.maxLimit || 50;

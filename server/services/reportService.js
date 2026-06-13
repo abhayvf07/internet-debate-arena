@@ -1,8 +1,8 @@
+// Report service — create, list, and resolve argument reports
+
 const Report = require("../models/Report");
 
-/**
- * Create a report
- */
+// Create a report on an argument
 const createReport = async ({ userId, argumentId, reason }) => {
     if (!argumentId || !reason) {
         const error = new Error("argumentId and reason are required");
@@ -10,7 +10,7 @@ const createReport = async ({ userId, argumentId, reason }) => {
         throw error;
     }
 
-    // Prevent duplicate reports — one pending report per user per argument
+    // Prevent duplicate reports
     const existing = await Report.findOne({ userId, argumentId, status: "pending" });
     if (existing) {
         const error = new Error("You have already reported this argument");
@@ -21,9 +21,7 @@ const createReport = async ({ userId, argumentId, reason }) => {
     return Report.create({ userId, argumentId, reason });
 };
 
-/**
- * Get all pending reports
- */
+// Get all pending reports
 const getReports = async () => {
     return Report.find({ status: "pending" })
         .populate("userId", "name email")
@@ -34,9 +32,7 @@ const getReports = async () => {
         .sort({ createdAt: -1 });
 };
 
-/**
- * Resolve a report
- */
+// Mark a report as resolved
 const resolveReport = async (reportId) => {
     const report = await Report.findById(reportId);
     if (!report) {

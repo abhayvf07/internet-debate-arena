@@ -1,3 +1,5 @@
+// Pagination — prev/next with numbered page buttons
+
 export default function Pagination({ page, totalPages, onPageChange }) {
     if (totalPages <= 1) return null;
 

@@ -1,8 +1,9 @@
+// Argument controller — delegates to argumentService
+
 const argumentService = require("../services/argumentService");
 const { asyncHandler } = require("../middleware/errorMiddleware");
 
-// @desc    Create a top-level argument
-// @route   POST /api/arguments
+// POST /api/arguments
 const createArgument = asyncHandler(async (req, res) => {
     const result = await argumentService.createArgument({
         ...req.body,
@@ -11,8 +12,7 @@ const createArgument = asyncHandler(async (req, res) => {
     res.status(201).json(result);
 });
 
-// @desc    Reply to an argument
-// @route   POST /api/arguments/reply
+// POST /api/arguments/reply
 const replyToArgument = asyncHandler(async (req, res) => {
     const result = await argumentService.replyToArgument({
         ...req.body,
@@ -21,8 +21,7 @@ const replyToArgument = asyncHandler(async (req, res) => {
     res.status(201).json(result);
 });
 
-// @desc    Get arguments for a debate (with nested replies)
-// @route   GET /api/arguments/:debateId
+// GET /api/arguments/:debateId
 const getArgumentsByDebate = asyncHandler(async (req, res) => {
     const result = await argumentService.getArgumentsByDebate(
         req.params.debateId,
@@ -31,8 +30,7 @@ const getArgumentsByDebate = asyncHandler(async (req, res) => {
     res.json(result);
 });
 
-// @desc    Like/unlike an argument (toggle)
-// @route   POST /api/arguments/like
+// POST /api/arguments/like
 const likeArgument = asyncHandler(async (req, res) => {
     const result = await argumentService.likeArgument(
         req.body.argumentId,
@@ -41,8 +39,7 @@ const likeArgument = asyncHandler(async (req, res) => {
     res.json(result);
 });
 
-// @desc    Delete an argument
-// @route   DELETE /api/arguments/:id
+// DELETE /api/arguments/:id
 const deleteArgument = asyncHandler(async (req, res) => {
     const result = await argumentService.deleteArgument(
         req.params.id,

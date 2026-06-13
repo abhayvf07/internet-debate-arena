@@ -1,13 +1,10 @@
+// Redis cache middleware — serves cached response or caches new one with TTL
+
 const { getCache, setCache } = require("../config/redis");
 
-/**
- * TTL-based cache middleware factory
- * @param {string} key    — structured cache key (e.g. "debates:trending")
- * @param {number} ttl    — time to live in seconds
- */
 const cacheMiddleware = (key, ttl) => {
     return async (req, res, next) => {
-        // Build unique key with query params
+        // Build unique key using the full URL
         const cacheKey = req.originalUrl ? `${key}:${req.originalUrl}` : key;
 
         const cached = await getCache(cacheKey);
@@ -15,7 +12,7 @@ const cacheMiddleware = (key, ttl) => {
             return res.json(cached);
         }
 
-        // Wrap res.json to cache the response
+        // Intercept res.json to save response to cache
         const originalJson = res.json.bind(res);
         res.json = (data) => {
             setCache(cacheKey, data, ttl);

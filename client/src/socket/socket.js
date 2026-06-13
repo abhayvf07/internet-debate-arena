@@ -1,12 +1,12 @@
+// Socket.io client — connect, disconnect, and room management
+
 import { io } from "socket.io-client";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
 
 let socket = null;
 
-/**
- * Get or create socket connection
- */
+// Get or create socket connection
 export const getSocket = (token) => {
     if (socket?.connected) return socket;
 
@@ -33,9 +33,7 @@ export const getSocket = (token) => {
     return socket;
 };
 
-/**
- * Disconnect socket
- */
+// Disconnect socket
 export const disconnectSocket = () => {
     if (socket) {
         socket.disconnect();
@@ -43,18 +41,14 @@ export const disconnectSocket = () => {
     }
 };
 
-/**
- * Join a debate room
- */
+// Join a debate room
 export const joinDebateRoom = (debateId) => {
     if (socket?.connected) {
         socket.emit("joinDebate", debateId);
     }
 };
 
-/**
- * Leave a debate room
- */
+// Leave a debate room
 export const leaveDebateRoom = (debateId) => {
     if (socket) {
         socket.emit("leaveDebate", debateId);

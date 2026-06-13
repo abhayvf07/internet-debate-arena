@@ -1,8 +1,10 @@
+// Redis client setup with cache helpers (get, set, delete, pattern delete)
+
 const Redis = require("ioredis");
 
 let client = null;
 
-// Connect to Redis if we have a URL setup, otherwise just run without caching
+// Connect if REDIS_URL is set, otherwise skip caching
 if (process.env.REDIS_URL) {
     client = new Redis(process.env.REDIS_URL, {
         maxRetriesPerRequest: 3,
@@ -23,29 +25,28 @@ if (process.env.REDIS_URL) {
     console.warn("REDIS_URL not set — caching disabled");
 }
 
-// Grab saved data from the cache
+// Get cached data by key
 const getCache = async (key) => {
     if (!client) return null;
     try {
         const data = await client.get(key);
         return data ? JSON.parse(data) : null;
     } catch {
-        return null; // Returning null is safe here so the app just fetches fresh data instead
+        return null;
     }
 };
 
-// Save data to the cache with an expiration timer (TTL in seconds)
+// Save data to cache with TTL in seconds
 const setCache = async (key, data, ttl) => {
     if (!client) return;
     try {
         await client.setex(key, ttl, JSON.stringify(data));
     } catch (err) {
-        // Log the error for monitoring, but don't crash the app
         console.warn(`Cache write failed for key "${key}": ${err.message}`);
     }
 };
 
-// Remove a specific cached item
+// Delete a single cached key
 const deleteCache = async (key) => {
     if (!client) return;
     try {
@@ -55,11 +56,10 @@ const deleteCache = async (key) => {
     }
 };
 
-// Find and delete a bunch of cached items using a wildcard (like "debates:*")
+// Delete all keys matching a wildcard pattern (e.g. "debates:*")
 async function deleteCachePattern(pattern) {
     if (!client) return;
     try {
-        // Scan in small batches so we don't lock up the database
         const stream = client.scanStream({
             match: pattern,
             count: 100

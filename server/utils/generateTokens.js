@@ -1,6 +1,8 @@
+// JWT token generators — crashes at startup if secrets are missing
+
 const jwt = require("jsonwebtoken");
 
-// Crash if secrets are missing
+// Fail fast if env vars are not set
 if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
     console.error('FATAL: JWT_SECRET and JWT_REFRESH_SECRET must both be set');
     process.exit(1);

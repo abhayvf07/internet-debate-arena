@@ -1,3 +1,5 @@
+// Score bar — Pro vs Con vote progress bar with winner label
+
 export default function ScoreBar({ proScore, conScore }) {
     const total = proScore + conScore;
     const proPercent = total === 0 ? 50 : Math.round((proScore / total) * 100);

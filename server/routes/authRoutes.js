@@ -1,3 +1,5 @@
+// Auth routes — register, login, token refresh, profile, avatar
+
 const express = require("express");
 const router = express.Router();
 
@@ -11,7 +13,6 @@ const {
     registerValidator,
     loginValidator,
 } = require("../validators/authValidator");
-
 
 router.post("/register", validate(registerValidator), register);
 router.post("/login", validate(loginValidator), login);

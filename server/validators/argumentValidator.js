@@ -1,5 +1,8 @@
+// Joi schemas for argument and reply validation
+
 const Joi = require("joi");
 
+// Validate new argument: debateId, text, side
 const createArgumentSchema = Joi.object({
     body: Joi.object({
         debateId: Joi.string().hex().length(24).required().messages({
@@ -20,6 +23,7 @@ const createArgumentSchema = Joi.object({
     params: Joi.object().unknown(true)
 });
 
+// Validate reply: parentId, text
 const replyArgumentSchema = Joi.object({
     body: Joi.object({
         parentId: Joi.string().hex().length(24).required().messages({

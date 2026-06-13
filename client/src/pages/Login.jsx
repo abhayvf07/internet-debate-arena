@@ -1,3 +1,5 @@
+// Login page — form for existing users to authenticate
+
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../services/api';

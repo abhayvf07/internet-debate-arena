@@ -1,7 +1,8 @@
+// JWT auth middleware — verifies token, checks ban status, attaches user to req
+
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// Protect routes — require valid JWT
 const protect = async (req, res, next) => {
     let token;
 
@@ -18,7 +19,6 @@ const protect = async (req, res, next) => {
                 return res.status(401).json({ message: "User not found" });
             }
 
-            // Check if user is banned
             if (user.isBanned) {
                 return res.status(403).json({ message: "Your account has been banned" });
             }

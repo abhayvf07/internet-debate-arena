@@ -1,3 +1,5 @@
+// Bookmark schema — saves which debates a user bookmarked
+
 const mongoose = require("mongoose");
 
 const bookmarkSchema = new mongoose.Schema(
@@ -16,9 +18,8 @@ const bookmarkSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Each user can only bookmark a debate once
+// One bookmark per user per debate
 bookmarkSchema.index({ userId: 1, debateId: 1 }, { unique: true });
-// Fast bookmark listing per user
 bookmarkSchema.index({ userId: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Bookmark", bookmarkSchema);

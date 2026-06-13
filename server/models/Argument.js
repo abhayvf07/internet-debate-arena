@@ -1,3 +1,5 @@
+// Argument schema — debate arguments with Pro/Con sides and nested replies
+
 const mongoose = require("mongoose");
 
 const argumentSchema = new mongoose.Schema(
@@ -36,7 +38,6 @@ const argumentSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Indexes
 argumentSchema.index({ debateId: 1, createdAt: -1 });
 argumentSchema.index({ author: 1 });
 

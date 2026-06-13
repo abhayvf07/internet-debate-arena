@@ -1,3 +1,5 @@
+// Profile page — user details, debates, bookmarks, and rank
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getDebates, getBookmarks, getLeaderboard, getMe, getUserStats, uploadAvatar } from '../services/api';
@@ -28,7 +30,6 @@ export default function Profile() {
                     getMe(),
                     getUserStats(),
                 ]);
-                // User's debates already filtered server-side via creator param
                 setMyDebates(debatesRes.data.debates);
                 setBookmarkedDebates(bookmarksRes.data);
                 setLeaderboard(leaderboardRes.data);
@@ -54,7 +55,6 @@ export default function Profile() {
         try {
             const res = await uploadAvatar(formData);
             setAvatarUrl(res.data.avatar);
-            // Update user in context
             login({ ...user, avatar: res.data.avatar });
             toast.success('Avatar updated!');
         } catch (err) {
@@ -76,15 +76,12 @@ export default function Profile() {
         transition: 'all 0.2s ease',
     });
 
-    // Find user's rank
     const userRank = leaderboard.findIndex((u) => u._id === user?._id) + 1;
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-            {/* Profile header */}
             <div className="glass animate-in" style={{ padding: '2rem', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
-                    {/* Avatar */}
                     <div style={{ position: 'relative' }}>
                         {avatarUrl ? (
                             <img
@@ -133,7 +130,6 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    {/* Stats */}
                     <div style={{
                         display: 'flex', gap: '1.5rem', textAlign: 'center',
                     }}>
@@ -183,7 +179,6 @@ export default function Profile() {
                 </div>
             </div>
 
-            {/* Tabs */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                 <button style={tabStyle(tab === 'debates')} onClick={() => setTab('debates')}>
                     My Debates ({myDebates.length})
@@ -196,7 +191,6 @@ export default function Profile() {
                 </button>
             </div>
 
-            {/* Content */}
             {loading ? (
                 <LoadingSpinner text="Loading profile..." />
             ) : (

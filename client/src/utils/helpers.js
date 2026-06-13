@@ -1,6 +1,6 @@
-/**
- * Format a date string to readable format
- */
+// Utility functions for formatting
+
+// Format date to "Jan 1, 2024" style
 export const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
         month: 'short',
@@ -9,17 +9,13 @@ export const formatDate = (dateStr) => {
     });
 };
 
-/**
- * Truncate text to a max length with ellipsis
- */
+// Truncate long text with ellipsis
 export const truncateText = (text, maxLength = 100) => {
     if (!text || text.length <= maxLength) return text;
     return text.slice(0, maxLength).trimEnd() + '...';
 };
 
-/**
- * Get user initials from name
- */
+// Get first 2 initials from a name
 export const getInitials = (name) => {
     if (!name) return '?';
     return name

@@ -1,3 +1,5 @@
+// Like button — toggleable heart with count
+
 export default function LikeButton({ likes, liked, onLike }) {
     return (
         <button

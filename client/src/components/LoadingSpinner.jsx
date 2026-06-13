@@ -1,3 +1,5 @@
+// Loading spinner — centered spinner with custom text
+
 export default function LoadingSpinner({ text = 'Loading...' }) {
     return (
         <div style={{

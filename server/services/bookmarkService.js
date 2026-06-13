@@ -1,8 +1,8 @@
+// Bookmark service — toggle and list bookmarked debates
+
 const Bookmark = require("../models/Bookmark");
 
-/**
- * Toggle bookmark on a debate
- */
+// Toggle bookmark on a debate
 const toggleBookmark = async (userId, debateId) => {
     if (!debateId) {
         const error = new Error("debateId is required");
@@ -21,9 +21,7 @@ const toggleBookmark = async (userId, debateId) => {
     return { bookmarked: true, message: "Debate bookmarked" };
 };
 
-/**
- * Get user's bookmarked debates
- */
+// Get user's bookmarked debates
 const getBookmarks = async (userId) => {
     const bookmarks = await Bookmark.find({ userId })
         .populate({

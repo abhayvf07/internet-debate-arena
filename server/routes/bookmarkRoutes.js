@@ -1,3 +1,5 @@
+// Bookmark routes — toggle and list bookmarks (auth required)
+
 const express = require("express");
 const {
     toggleBookmark,

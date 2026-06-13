@@ -1,3 +1,5 @@
+// Category filter — pill buttons for filtering debates by category
+
 const CATEGORIES = [
     'All',
     'Technology',

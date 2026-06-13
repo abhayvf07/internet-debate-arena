@@ -1,3 +1,5 @@
+// Argument service — create, reply, like, delete arguments with real-time updates
+
 const Argument = require("../models/Argument");
 const Like = require("../models/Like");
 const Debate = require("../models/Debate");
@@ -8,24 +10,20 @@ const { deleteCachePattern } = require("../config/redis");
 
 // Recursively delete an argument and all its nested replies
 const deleteArgumentAndReplies = async (argumentId) => {
-    let deletedCount = 1; // Count this current argument
-    
-    // Grab all direct replies
+    let deletedCount = 1;
     const replies = await Argument.find({ parentId: argumentId }).distinct('_id');
     
-    // Dig down and delete replies of replies
     for (const replyId of replies) {
         deletedCount += await deleteArgumentAndReplies(replyId); 
     }
     
-    // Clean up likes and the argument itself
     await Like.deleteMany({ argumentId });
     await Argument.findByIdAndDelete(argumentId);
 
     return deletedCount;
 };
 
-// Add a brand new argument to the debate
+// Create a new top-level argument
 const createArgument = async ({ debateId, text, side, userId }) => {
     if (!debateId || !text || !side) {
         const error = new Error("debateId, text, and side are required");
@@ -56,7 +54,6 @@ const createArgument = async ({ debateId, text, side, userId }) => {
 
     const populated = await argument.populate("author", "name");
 
-    // Update debate count and activity
     await Debate.updateOne(
         { _id: debateId },
         {
@@ -65,14 +62,11 @@ const createArgument = async ({ debateId, text, side, userId }) => {
         }
     );
 
-    // Keep trending scores fresh
     await recalcTrendingScore(debateId);
-
-    // Clear cache before sending live updates
     await deleteCachePattern("debates:*");
     await deleteCachePattern(`debate:single:*${debateId}*`);
 
-    // Broadcast the new argument (wrapped in try/catch so sockets don't break the API)
+    // Broadcast to debate room
     try {
         emitToDebate(debateId, "argumentAdded", populated.toObject());
     } catch (err) {
@@ -101,11 +95,10 @@ const replyToArgument = async ({ parentId, text, userId }) => {
         debateId: parent.debateId,
         author: userId,
         text,
-        side: parent.side, // Replies inherit the same side as the parent
+        side: parent.side,
         parentId,
     });
 
-    // Bump up the debate activity stats
     await Debate.updateOne(
         { _id: parent.debateId },
         {
@@ -127,7 +120,6 @@ const replyToArgument = async ({ parentId, text, userId }) => {
         console.error("Socket emit failed in replyToArgument:", err.message);
     }
 
-    // Return the reply and trigger a notification if they replied to someone else
     return {
         argument: populated,
         alert: parent.author.toString() !== userId.toString()
@@ -136,24 +128,23 @@ const replyToArgument = async ({ parentId, text, userId }) => {
     };
 };
 
-// Load all arguments and nest the replies
+// Get all arguments for a debate as a nested tree
 const getArgumentsByDebate = async (debateId, userId) => {
     const allArgs = await Argument.find({ debateId })
         .populate("author", "name")
         .sort({ createdAt: -1 })
-        .limit(200) // Hard cap so massive debates don't crash the server
+        .limit(200)
         .lean();
 
     const argMap = {};
     const topLevel = [];
 
-    // Setup empty reply arrays for everyone
     allArgs.forEach((arg) => {
         arg.replies = [];
         argMap[arg._id.toString()] = arg;
     });
 
-    // Group replies under their parent arguments
+    // Nest replies under their parent
     allArgs.forEach((arg) => {
         if (arg.parentId) {
             const parent = argMap[arg.parentId.toString()];
@@ -165,7 +156,7 @@ const getArgumentsByDebate = async (debateId, userId) => {
         }
     });
 
-    // Figure out which ones the current user has liked
+    // Check which arguments the current user has liked
     let userLikes = {};
     if (userId) {
         const likes = await Like.find({
@@ -180,7 +171,7 @@ const getArgumentsByDebate = async (debateId, userId) => {
     return { arguments: topLevel, userLikes };
 };
 
-// Toggle a like on an argument
+// Toggle like on an argument
 const likeArgument = async (argumentId, userId) => {
     if (!argumentId) {
         const error = new Error("argumentId is required");
@@ -195,7 +186,7 @@ const likeArgument = async (argumentId, userId) => {
         throw error;
     }
 
-    // No self-liking allowed!
+    // Can't like your own argument
     if (argument.author.toString() === userId.toString()) {
         const error = new Error("You cannot like your own argument");
         error.statusCode = 403;
@@ -206,7 +197,6 @@ const likeArgument = async (argumentId, userId) => {
     let liked, alert;
 
     if (existingLike) {
-        // Remove the like
         await existingLike.deleteOne();
         argument.likes = Math.max(0, argument.likes - 1);
         await argument.save();
@@ -214,7 +204,6 @@ const likeArgument = async (argumentId, userId) => {
         liked = false;
         alert = null;
     } else {
-        // Add the like
         await Like.create({ userId, argumentId });
         argument.likes += 1;
         await argument.save();
@@ -229,7 +218,7 @@ const likeArgument = async (argumentId, userId) => {
     return { liked, likes: argument.likes, alert };
 };
 
-// Delete an argument and perfectly clean up its replies
+// Delete an argument and all its replies
 const deleteArgument = async (argumentId, userId, userRole) => {
     const argument = await Argument.findById(argumentId);
     
@@ -239,7 +228,7 @@ const deleteArgument = async (argumentId, userId, userRole) => {
         throw error;
     }
 
-    // Check if the user owns this or is an admin
+    // Only author or admin can delete
     if (argument.author.toString() !== userId.toString() && userRole !== "admin") {
         const error = new Error("Not authorized to delete this argument");
         error.statusCode = 403;
@@ -247,11 +236,8 @@ const deleteArgument = async (argumentId, userId, userRole) => {
     }
 
     const debateId = argument.debateId;
-
-    // Kick off the recursive delete and get the total count of removed arguments
     const totalDeleted = await deleteArgumentAndReplies(argumentId);
 
-    // Accurately drop the debate's argument count
     await Debate.updateOne(
         { _id: debateId },
         {

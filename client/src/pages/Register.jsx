@@ -1,3 +1,5 @@
+// Register page — form for new users to sign up
+
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../services/api';

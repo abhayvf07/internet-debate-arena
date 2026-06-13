@@ -1,18 +1,17 @@
-/**
- * Global Error Handling Middleware
- * Catches and formats all errors consistently
- */
+// Global error handler and async wrapper
+
+// Catches and formats all errors into consistent JSON responses
 const errorHandler = (err, req, res, next) => {
     let statusCode = err.statusCode || 500;
     let message = err.message || "Internal Server Error";
 
-    // Mongoose bad ObjectId (CastError)
+    // Mongoose bad ObjectId
     if (err.name === "CastError" && err.kind === "ObjectId") {
         statusCode = 400;
         message = "Resource not found — invalid ID";
     }
 
-    // Mongoose duplicate key error
+    // Mongoose duplicate key
     if (err.code === 11000) {
         statusCode = 400;
         const field = Object.keys(err.keyValue).join(", ");
@@ -48,9 +47,7 @@ const errorHandler = (err, req, res, next) => {
     });
 };
 
-/**
- * Wrap async route handlers so errors are forwarded to errorHandler
- */
+// Wraps async handlers so errors go to errorHandler automatically
 const asyncHandler = (fn) => (req, res, next) =>
     Promise.resolve(fn(req, res, next)).catch(next);
 

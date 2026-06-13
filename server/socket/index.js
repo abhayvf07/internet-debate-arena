@@ -1,8 +1,10 @@
+// Socket.io server — JWT auth, debate rooms, and live event broadcasting
+
 const jwt = require("jsonwebtoken");
 
 let io = null;
 
-// Start up the real-time Socket.io server
+// Initialize Socket.io with CORS and auth middleware
 const initSocket = (server) => {
     const { Server } = require("socket.io");
 
@@ -13,7 +15,7 @@ const initSocket = (server) => {
         },
     });
 
-    // Check for a login token, but still allow guests to connect as read-only
+    // Auth middleware — guests allowed as read-only
     io.use((socket, next) => {
         const token = socket.handshake.auth?.token;
         if (!token) {
@@ -25,14 +27,14 @@ const initSocket = (server) => {
             socket.userId = decoded.id;
             next();
         } catch {
-            return next(); // If the token is fake/expired, just treat them as a guest
+            return next();
         }
     });
 
     io.on("connection", (socket) => {
         console.debug(`Socket connected: ${socket.id}`);
 
-        // Join a debate room (Strict check: must be a valid MongoDB ObjectId!)
+        // Join a debate room (must be valid MongoDB ObjectId)
         socket.on('joinDebate', (debateId) => {
             if (debateId && /^[a-f\d]{24}$/i.test(debateId)) { 
                 socket.join(`debate:${debateId}`);
@@ -40,7 +42,7 @@ const initSocket = (server) => {
             }
         });
 
-        // Leave the room when the user exits the debate page
+        // Leave a debate room
         socket.on("leaveDebate", (debateId) => {
             if (debateId) {
                 socket.leave(`debate:${debateId}`);
@@ -56,10 +58,10 @@ const initSocket = (server) => {
     return io;
 };
 
-// Expose the socket instance so we can grab it in other files
+// Get the socket instance for use in other files
 const getIO = () => io;
 
-// Broadcast a live update to everyone currently viewing a specific debate
+// Send a live update to everyone in a specific debate room
 const emitToDebate = (debateId, event, data) => {
     if (io) {
         io.to(`debate:${debateId}`).emit(event, data);

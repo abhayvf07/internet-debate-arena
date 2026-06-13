@@ -1,3 +1,5 @@
+// Home page — debates feed, search, category filter, and sorting
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +26,6 @@ export default function Home() {
     const [searchInput, setSearchInput] = useState(urlQuery);
     const [sortBy, setSortBy] = useState('all');
 
-    // Sync URL query param
     useEffect(() => {
         if (urlQuery) {
             setSearchQuery(urlQuery);
@@ -32,7 +33,6 @@ export default function Home() {
         }
     }, [urlQuery]);
 
-    // 500ms debounce for search
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             if (searchInput !== searchQuery) {
@@ -43,7 +43,6 @@ export default function Home() {
         return () => clearTimeout(timeoutId);
     }, [searchInput, searchQuery]);
 
-    // React Query for Debates
     const { data: debatesData, isLoading: loadingDebates } = useQuery({
         queryKey: ['debates', page, category, searchQuery, sortBy],
         queryFn: async () => {
@@ -52,7 +51,6 @@ export default function Home() {
                 return res.data;
             } else if (sortBy === 'trending') {
                 const res = await getTrendingDebates(50);
-                // Client-side pagination for trending
                 const start = (page - 1) * 10;
                 return {
                     debates: res.data.slice(start, start + 10),
@@ -69,16 +67,6 @@ export default function Home() {
             }
         },
         initialData: { debates: [], totalPages: 1 },
-    });
-
-    // React Query for Trending (top 5)
-    const { data: trendingTop } = useQuery({
-        queryKey: ['trending-top-5'],
-        queryFn: async () => {
-            const res = await getTrendingDebates(5);
-            return res.data;
-        },
-        initialData: [],
     });
 
     const handleSearch = (e) => {
@@ -108,7 +96,6 @@ export default function Home() {
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-            {/* Hero */}
             <div style={{ textAlign: 'center', marginBottom: '2.5rem' }} className="animate-in">
                 <h1 style={{
                     fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.75rem',
@@ -122,7 +109,6 @@ export default function Home() {
                 </p>
             </div>
 
-            {/* Search */}
             <form onSubmit={handleSearch} style={{
                 display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', maxWidth: '500px', margin: '0 auto 1.5rem',
             }}>
@@ -145,10 +131,8 @@ export default function Home() {
                 )}
             </form>
 
-            {/* Category Filter */}
             <CategoryFilter selected={category} onSelect={handleCategoryChange} />
 
-            {/* Sort buttons */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                 {SORT_OPTIONS.map((opt) => (
                     <button

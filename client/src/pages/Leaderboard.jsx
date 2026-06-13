@@ -1,3 +1,5 @@
+// Leaderboard page — display top ranked users by points
+
 import { useState, useEffect } from 'react';
 import { getLeaderboard } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -63,7 +65,6 @@ export default function Leaderboard() {
                                     animationDelay: `${idx * 0.05}s`,
                                 }}
                             >
-                                {/* Rank */}
                                 <span style={{
                                     fontSize: idx < 3 ? '1.5rem' : '1.1rem',
                                     fontWeight: 800,
@@ -74,7 +75,6 @@ export default function Leaderboard() {
                                     {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
                                 </span>
 
-                                {/* Avatar */}
                                 {u.avatar ? (
                                     <img src={u.avatar} alt="" style={{
                                         width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover',
@@ -90,7 +90,6 @@ export default function Leaderboard() {
                                     </div>
                                 )}
 
-                                {/* Name */}
                                 <div style={{ flex: 1 }}>
                                     <span style={{ fontWeight: 600, fontSize: '1rem' }}>
                                         {u.name}
@@ -105,7 +104,6 @@ export default function Leaderboard() {
                                     </div>
                                 </div>
 
-                                {/* Points */}
                                 <div style={{ textAlign: 'right' }}>
                                     <div style={{
                                         fontWeight: 800, fontSize: '1.15rem',

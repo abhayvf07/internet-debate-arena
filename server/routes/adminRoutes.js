@@ -1,3 +1,5 @@
+// Admin routes — all require auth + admin role
+
 const express = require("express");
 const {
     getAllUsers,
@@ -12,7 +14,6 @@ const { adminOnly } = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
-// All admin routes require authentication + admin role
 router.use(protect, adminOnly);
 
 router.get("/stats", getAdminStats);

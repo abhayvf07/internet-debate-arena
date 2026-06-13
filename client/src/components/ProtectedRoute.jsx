@@ -1,3 +1,5 @@
+// Route guard — redirects to login if not authenticated, home if not admin
+
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 

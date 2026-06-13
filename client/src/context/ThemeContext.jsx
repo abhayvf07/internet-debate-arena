@@ -1,3 +1,5 @@
+// Theme context — dark/light toggle saved to localStorage
+
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
@@ -7,6 +9,7 @@ export function ThemeProvider({ children }) {
         return localStorage.getItem('theme') || 'dark';
     });
 
+    // Apply theme to body and save
     useEffect(() => {
         document.body.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);

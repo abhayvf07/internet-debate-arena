@@ -1,3 +1,5 @@
+// User schema — auth, profile, points, banning, and password hashing
+
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
@@ -59,7 +61,6 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Indexes
 userSchema.index({ email: 1 });
 userSchema.index({ points: -1 });
 

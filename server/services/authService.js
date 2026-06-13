@@ -1,3 +1,5 @@
+// Auth service — register, login, token refresh, profile, avatar, leaderboard
+
 const User = require("../models/User");
 const Debate = require("../models/Debate");
 const Argument = require("../models/Argument");
@@ -5,12 +7,12 @@ const Vote = require("../models/Vote");
 const crypto = require("crypto");
 const { generateAccessToken, generateRefreshToken } = require("../utils/generateTokens");
 
-// Scramble the token before saving it to protect it if the DB ever leaks
+// Hash token with SHA-256 before storing in DB
 const hashToken = (token) => {
     return crypto.createHash("sha256").update(token).digest("hex");
 };
 
-// Standardize the user info we send back to the frontend
+// Build the user response object sent to frontend
 const buildUserResponse = (user, accessToken, refreshToken) => ({
     _id: user._id,
     name: user.name,
@@ -20,11 +22,10 @@ const buildUserResponse = (user, accessToken, refreshToken) => ({
     avatar: user.avatar,
     accessToken: accessToken || undefined,
     refreshToken: refreshToken || undefined,
-    // Keep this for older frontend code that looks for "token"
     token: accessToken || undefined,
 });
 
-// Sign up a new user
+// Register a new user
 const registerUser = async ({ name, email, password }) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -38,14 +39,13 @@ const registerUser = async ({ name, email, password }) => {
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
-    // Save the scrambled version of the refresh token
     user.refreshToken = hashToken(refreshToken);
     await user.save();
 
     return buildUserResponse(user, accessToken, refreshToken);
 };
 
-// Log the user in if credentials match and they aren't banned
+// Login user
 const loginUser = async ({ email, password }) => {
     const user = await User.findOne({ email }).select("+password");
     if (!user || !(await user.matchPassword(password))) {
@@ -69,13 +69,12 @@ const loginUser = async ({ email, password }) => {
     return buildUserResponse(user, accessToken, refreshToken);
 };
 
-// Swap a valid refresh token for a fresh access token
+// Swap a valid refresh token for a new access token
 const refreshAccessToken = async (token) => {
     const jwt = require("jsonwebtoken");
 
     let decoded;
     try {
-        // Strictly using the refresh secret here!
         decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     } catch {
         const error = new Error("Invalid or expired refresh token");
@@ -90,7 +89,7 @@ const refreshAccessToken = async (token) => {
         throw error;
     }
 
-    // Make sure the token matches the one we saved in the DB
+    // Verify token matches what's stored in DB
     const hashedToken = hashToken(token);
     if (user.refreshToken !== hashedToken) {
         const error = new Error("Refresh token mismatch");
@@ -108,12 +107,12 @@ const refreshAccessToken = async (token) => {
     return { accessToken: newAccessToken };
 };
 
-// Grab the logged-in user's profile info (safely hiding the password)
+// Get current user profile
 const getMe = async (userId) => {
     return User.findById(userId).select("-password -refreshToken");
 };
 
-// Tally up the user's site activity for their profile page
+// Get user activity stats
 const getUserStats = async (userId) => {
     const [debatesCreated, argumentsPosted, votesReceived] = await Promise.all([
         Debate.countDocuments({ creator: userId }),
@@ -127,7 +126,7 @@ const getUserStats = async (userId) => {
     return { debatesCreated, argumentsPosted, votesReceived };
 };
 
-// Save a new profile picture
+// Update user avatar
 const updateAvatar = async (userId, file) => {
     if (!file) {
         const error = new Error("Please upload an image file");
@@ -143,7 +142,7 @@ const updateAvatar = async (userId, file) => {
     ).select("-password -refreshToken");
 };
 
-// Fetch the top-scoring users, skipping anyone who is banned
+// Get top users by points
 const getLeaderboard = async (limit = 20) => {
     return User.find({ isBanned: { $ne: true } })
         .select("name points role createdAt avatar")

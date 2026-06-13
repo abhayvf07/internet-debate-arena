@@ -1,5 +1,8 @@
+// Joi schema for debate creation validation
+
 const Joi = require("joi");
 
+// Validate new debate: title, description, category, tags
 const createDebateSchema = Joi.object({
     body: Joi.object({
         title: Joi.string().trim().max(150).required().messages({
