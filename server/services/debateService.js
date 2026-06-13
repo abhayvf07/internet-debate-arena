@@ -5,6 +5,7 @@ const Argument = require("../models/Argument");
 const Bookmark = require("../models/Bookmark");
 const Vote = require("../models/Vote");
 const Like = require("../models/Like");
+const Report = require("../models/Report");
 const { paginate } = require("../utils/pagination");
 const { emitToDebate } = require("../socket/index");
 const { deleteCachePattern } = require("../config/redis");
@@ -267,6 +268,7 @@ const deleteDebate = async (debateId, user) => {
 
     if (argIds.length > 0) {
         await Like.deleteMany({ argumentId: { $in: argIds } });
+        await Report.deleteMany({ argumentId: { $in: argIds } });
     }
 
     await deleteCachePattern("debates:*");

@@ -148,7 +148,7 @@ export default function DebatePage() {
             const res = await toggleBookmark(id);
             setBookmarked(res.data.bookmarked);
             toast.success(res.data.bookmarked ? '🔖 Bookmarked!' : 'Bookmark removed');
-        } catch (err) {
+        } catch {
             toast.error('Bookmark failed');
         }
     };

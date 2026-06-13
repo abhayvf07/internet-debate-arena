@@ -1,6 +1,7 @@
 // Auth context — manages user state, login, logout, and error handling
 
 import { createContext, useContext, useReducer, useEffect } from 'react';
+import { logoutUser } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -44,7 +45,12 @@ export function AuthProvider({ children }) {
         dispatch({ type: 'AUTH_SUCCESS', payload: userData });
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await logoutUser();
+        } catch (err) {
+            console.error('Logout request failed', err);
+        }
         dispatch({ type: 'LOGOUT' });
     };
 

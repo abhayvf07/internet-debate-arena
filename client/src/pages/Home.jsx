@@ -22,16 +22,19 @@ export default function Home() {
 
     const [page, setPage] = useState(1);
     const [category, setCategory] = useState('');
+    const [prevUrlQuery, setPrevUrlQuery] = useState(urlQuery);
     const [searchQuery, setSearchQuery] = useState(urlQuery);
     const [searchInput, setSearchInput] = useState(urlQuery);
     const [sortBy, setSortBy] = useState('all');
 
-    useEffect(() => {
+    // Sync state with URL if it changes (e.g. back navigation)
+    if (urlQuery !== prevUrlQuery) {
+        setPrevUrlQuery(urlQuery);
         if (urlQuery) {
             setSearchQuery(urlQuery);
             setSearchInput(urlQuery);
         }
-    }, [urlQuery]);
+    }
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {

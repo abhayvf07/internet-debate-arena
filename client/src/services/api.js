@@ -87,6 +87,7 @@ API.interceptors.response.use(
 // Auth
 export const registerUser = (data) => API.post('/auth/register', data);
 export const loginUser = (data) => API.post('/auth/login', data);
+export const logoutUser = () => API.post('/auth/logout', {}, { withCredentials: true });
 export const refreshToken = () => API.post('/auth/refresh-token', {}, { withCredentials: true });
 export const getMe = () => API.get('/auth/me');
 export const getUserStats = () => API.get('/auth/stats');

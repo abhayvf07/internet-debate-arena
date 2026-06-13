@@ -1,27 +1,17 @@
 // Navbar — logo, search, theme toggle, auth links, and admin access
 
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../hooks/useTheme';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
-    const [searchInput, setSearchInput] = useState('');
-
     const handleLogout = () => {
         logout();
         navigate('/');
-    };
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (searchInput.trim()) {
-            navigate(`/?q=${encodeURIComponent(searchInput.trim())}`);
-            setSearchInput('');
-        }
     };
 
     return (

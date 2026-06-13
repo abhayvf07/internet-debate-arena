@@ -2,6 +2,7 @@
 
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { getCache, setCache } = require("../config/redis");
 
 const protect = async (req, res, next) => {
     let token;
@@ -13,7 +14,15 @@ const protect = async (req, res, next) => {
         try {
             token = req.headers.authorization.split(" ")[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            const user = await User.findById(decoded.id).select("-password -refreshToken");
+            
+            let user = await getCache(`user:auth:${decoded.id}`);
+            
+            if (!user) {
+                user = await User.findById(decoded.id).select("-password -refreshToken").lean();
+                if (user) {
+                    await setCache(`user:auth:${decoded.id}`, user, 3600); // 1 hour
+                }
+            }
 
             if (!user) {
                 return res.status(401).json({ message: "User not found" });

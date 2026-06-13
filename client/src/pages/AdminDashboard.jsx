@@ -1,7 +1,7 @@
 // Admin Dashboard — tools for moderation, ban user, and site stats
 
 import { useState, useEffect } from 'react';
-import { adminGetReports, resolveReport, adminGetUsers, adminDeleteDebate, adminDeleteArgument, adminBanUser, adminGetStats } from '../services/api';
+import { adminGetReports, resolveReport, adminGetUsers, adminDeleteArgument, adminBanUser, adminGetStats } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
             await adminDeleteArgument(argId);
             toast.success('Argument deleted');
             fetchReports();
-        } catch (err) {
+        } catch {
             toast.error('Failed to delete argument');
         }
     };

@@ -8,6 +8,7 @@ const Like = require("../models/Like");
 const Bookmark = require("../models/Bookmark");
 const Report = require("../models/Report");
 const { paginate } = require("../utils/pagination");
+const { deleteCache } = require("../config/redis");
 
 // Recursively collect all descendant argument IDs
 const collectAllDescendantIds = async (parentId) => {
@@ -122,6 +123,8 @@ const banUser = async (userId) => {
     user.isBanned = !user.isBanned;
     user.refreshToken = null;
     await user.save();
+
+    await deleteCache(`user:auth:${user._id.toString()}`);
 
     return {
         message: user.isBanned ? "User banned" : "User unbanned",

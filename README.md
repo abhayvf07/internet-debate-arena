@@ -37,7 +37,7 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 ### Authentication
 - Register and login
 - Passwords hashed with bcryptjs
-- JWT access + refresh token flow
+- JWT access tokens (JSON body) + refresh tokens (secure HttpOnly cookies)
 - Protected routes on both client and server side
 
 ### Debate System
@@ -64,11 +64,12 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 ### Admin Features
 - View and manage all users with pagination
 - Ban or unban users (invalidates their sessions automatically)
-- Delete debates and arguments with cascade cleanup
+- Deep recursive cascade cleanup for deleted arguments (ensures no orphaned replies, likes, or reports are left behind)
 - Handle user reports — view pending ones and mark them resolved
 - Admin dashboard with platform-wide stats
 
 ### Performance & Security
+- Strict environment variable validation at startup to prevent silent security downgrades
 - Redis caching with TTL — auto-invalidated on writes
 - App degrades gracefully if Redis is unavailable
 - Pagination on all large data sets
@@ -78,6 +79,7 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 - xss-clean against XSS attacks
 - Rate limiting — 5 req/min auth, 50 req/min votes/likes, 100 req/min general
 - Joi validation on all request schemas
+- Clean, well-documented codebase with uniform docstrings
 - Morgan HTTP logging + console logging
 - Multer for avatar uploads
 
@@ -232,6 +234,19 @@ Debate Arena/
 
 ---
 
+## System Design & Architecture
+
+When designing this platform, I wanted to go beyond a basic CRUD app and build something that felt snappy and could handle real traffic without immediately choking the database. Here's a high-level look at how the pieces fit together:
+
+- **Client Layer (React + Vite):** The frontend relies heavily on `React Query` to cache server responses and reduce network waterfalls. Global state is managed via Context only where necessary (like Auth and Theme), keeping components modular and fast.
+- **API Gateway & Routing (Express):** All incoming HTTP requests hit a robust middleware stack. This layer strips out NoSQL injection attempts (`express-mongo-sanitize`), sanitizes inputs (`xss-clean`), enforces rate limits (`express-rate-limit`), and validates data payloads (`Joi`) before they ever touch the database.
+- **Service Layer (The Brains):** Instead of bloated controllers, business logic is completely isolated into a "Service Layer". For instance, `debateService.js` handles the complex trending score math, database writes, and cache invalidation. Controllers strictly handle HTTP Request/Response wrapping.
+- **Real-Time Engine (Socket.IO):** To prevent constant long-polling, clients subscribe to specific "Debate Rooms" via Socket.IO. When a vote changes or a new argument is posted, the service layer emits an event exclusively to users viewing that specific debate, saving massive amounts of bandwidth.
+- **Caching Layer (Redis):** Heavy `GET` endpoints (like trending debates or the user leaderboard) are wrapped in a Redis cache. If the Redis server goes offline, a custom graceful degradation fallback catches the error and queries MongoDB directly, ensuring the app stays alive without crashing.
+- **Data Persistence (MongoDB):** The database relies on strict schema validation and aggressive indexing on heavily-queried fields (like `trendingScore` and `category`). Because arguments are deeply nested threads, a recursive cascading deletion algorithm ensures that when a parent argument is deleted, all children, grandchildren, and associated reports or likes are instantly swept from the database to prevent orphaned data.
+
+---
+
 ## Getting Started
 
 ### What you need installed
@@ -333,6 +348,7 @@ npm run preview    # preview the production build locally
 |--------|----------|------|-------------|
 | POST | `/api/auth/register` | No | Register new user |
 | POST | `/api/auth/login` | No | Login and get tokens |
+| POST | `/api/auth/logout` | No | Logout and clear HttpOnly cookie |
 | POST | `/api/auth/refresh-token` | No | Get new access token using refresh token |
 | GET | `/api/auth/me` | Yes | Get current user profile |
 | GET | `/api/auth/stats` | Yes | Get user contribution stats |
