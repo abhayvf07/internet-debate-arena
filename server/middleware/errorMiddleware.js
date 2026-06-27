@@ -1,4 +1,4 @@
-// Global error handler and async wrapper
+// Error handling
 
 // Catches and formats all errors into consistent JSON responses
 const errorHandler = (err, req, res, next) => {
