@@ -1,4 +1,4 @@
-// Auth service — register, login, token refresh, profile, avatar, leaderboard
+// Auth service
 
 const User = require("../models/User");
 const Debate = require("../models/Debate");
@@ -126,7 +126,7 @@ const getUserStats = async (userId) => {
     return { debatesCreated, argumentsPosted, votesReceived };
 };
 
-// Update user avatar
+// Update user avatar (Cloudinary returns full URL in file.path)
 const updateAvatar = async (userId, file) => {
     if (!file) {
         const error = new Error("Please upload an image file");
@@ -134,10 +134,10 @@ const updateAvatar = async (userId, file) => {
         throw error;
     }
 
-    const avatarPath = `/uploads/avatars/${file.filename}`;
+    const avatarUrl = file.path;
     return User.findByIdAndUpdate(
         userId,
-        { avatar: avatarPath },
+        { avatar: avatarUrl },
         { new: true }
     ).select("-password -refreshToken");
 };
