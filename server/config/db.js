@@ -1,4 +1,4 @@
-// Connects to MongoDB using Mongoose
+// MongoDB connection
 
 const mongoose = require("mongoose");
 
