@@ -1,4 +1,4 @@
-// Server entry point — middleware stack, routes, and startup
+// Server startup
 
 require("dotenv").config(); 
 
@@ -47,9 +47,6 @@ app.use(morgan(":method :url :status :response-time ms"));
 // Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Static files
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Rate limiters
 const authLimiter = rateLimit({
