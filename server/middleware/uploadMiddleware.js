@@ -1,26 +1,32 @@
-// Multer config for avatar uploads — images only, 5MB max
+// Avatar upload setup
 
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
 
-// Save to uploads/avatars/ with unique filename
-const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, path.join(__dirname, "..", "uploads", "avatars"));
-    },
-    filename(req, file, cb) {
-        const uniqueName = `${req.user._id}-${Date.now()}${path.extname(file.originalname)}`;
-        cb(null, uniqueName);
+// Configure Cloudinary from environment variables
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Store avatars in Cloudinary under debate-arena/avatars folder
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "debate-arena/avatars",
+        allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
+        transformation: [{ width: 256, height: 256, crop: "fill", gravity: "face" }],
     },
 });
 
 // Only allow image files
 const fileFilter = (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif|webp/;
-    const extOk = allowed.test(path.extname(file.originalname).toLowerCase());
     const mimeOk = allowed.test(file.mimetype);
 
-    if (extOk && mimeOk) {
+    if (mimeOk) {
         cb(null, true);
     } else {
         cb(new Error("Only image files are allowed (jpg, png, gif, webp)"));
