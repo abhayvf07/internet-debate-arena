@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getDebates, searchDebates, getTrendingDebates } from '../services/api';
+import { getDebates, searchDebates } from '../services/api';
 import DebateCard from '../components/DebateCard';
 import CategoryFilter from '../components/CategoryFilter';
 import Pagination from '../components/Pagination';
@@ -52,13 +52,6 @@ export default function Home() {
             if (searchQuery) {
                 const res = await searchDebates({ q: searchQuery, page, limit: 10 });
                 return res.data;
-            } else if (sortBy === 'trending') {
-                const res = await getTrendingDebates(50);
-                const start = (page - 1) * 10;
-                return {
-                    debates: res.data.slice(start, start + 10),
-                    totalPages: Math.ceil(res.data.length / 10),
-                };
             } else {
                 const res = await getDebates({
                     page,
