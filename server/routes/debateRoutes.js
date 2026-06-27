@@ -1,4 +1,4 @@
-// Debate routes — CRUD, search, trending, voting, views
+// Debate routes
 
 const express = require("express");
 const rateLimit = require("express-rate-limit");
