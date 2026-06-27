@@ -1,4 +1,4 @@
-// Debate service — CRUD, voting, search, trending, and view tracking
+// Debate service
 
 const Debate = require("../models/Debate");
 const Argument = require("../models/Argument");
