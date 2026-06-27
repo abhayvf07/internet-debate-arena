@@ -31,6 +31,8 @@ server/dist/
 # Environment variables
 # ==============================
 .env
+server/.env
+client/.env
 .env.local
 .env.development
 .env.development.local
