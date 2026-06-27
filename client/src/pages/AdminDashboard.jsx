@@ -55,8 +55,8 @@ export default function AdminDashboard() {
             fetchReports();
             fetchStats();
         } catch (err) {
-            toast.error('Failed to resolve report');
-            console.error('Failed to resolve report:', err);
+            const msg = err.response?.data?.message || 'Failed to resolve report';
+            toast.error(msg);
         }
     };
 
@@ -66,8 +66,9 @@ export default function AdminDashboard() {
             await adminDeleteArgument(argId);
             toast.success('Argument deleted');
             fetchReports();
-        } catch {
-            toast.error('Failed to delete argument');
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to delete argument';
+            toast.error(msg);
         }
     };
 
