@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { logoutUser } from '../services/api';
+import { disconnectSocket } from '../socket/socket';
 
 const AuthContext = createContext();
 
@@ -51,6 +52,7 @@ export function AuthProvider({ children }) {
         } catch (err) {
             console.error('Logout request failed', err);
         }
+        disconnectSocket();
         dispatch({ type: 'LOGOUT' });
     };
 
