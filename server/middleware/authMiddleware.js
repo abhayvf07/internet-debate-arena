@@ -1,4 +1,4 @@
-// JWT auth middleware — verifies token, checks ban status, attaches user to req
+// Auth middleware
 
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
