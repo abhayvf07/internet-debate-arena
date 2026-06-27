@@ -23,7 +23,7 @@ const createArgumentSchema = Joi.object({
     params: Joi.object().unknown(true)
 });
 
-// Validate reply: parentId, text
+// Validate reply: parentId, text, optional side
 const replyArgumentSchema = Joi.object({
     body: Joi.object({
         parentId: Joi.string().hex().length(24).required().messages({
@@ -34,6 +34,9 @@ const replyArgumentSchema = Joi.object({
         text: Joi.string().trim().required().max(2000).messages({
             "string.empty": "text is required",
             "string.max": "Argument text must be under 2000 characters",
+        }),
+        side: Joi.string().valid("Pro", "Con").optional().messages({
+            "any.only": "Side must be Pro or Con",
         }),
     }).unknown(true),
     query: Joi.object().unknown(true),
