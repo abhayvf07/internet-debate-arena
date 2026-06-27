@@ -1,20 +1,33 @@
-// Redis client setup with cache helpers (get, set, delete, pattern delete)
+// Redis cache helpers
 
 const Redis = require("ioredis");
 
 let client = null;
 
+const rawRedisUrl = process.env.REDIS_URL?.trim().replace(/^['"]|['"]$/g, "");
+
 // Connect if REDIS_URL is set, otherwise skip caching
-if (process.env.REDIS_URL) {
-    client = new Redis(process.env.REDIS_URL, {
-        maxRetriesPerRequest: 3,
-        retryDelayOnFailover: 300,
+if (rawRedisUrl) {
+    const isTls = rawRedisUrl.startsWith("rediss://");
+
+    client = new Redis(rawRedisUrl, {
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false,
         lazyConnect: true,
+        connectTimeout: 5000,
+        retryStrategy(times) {
+            return Math.min(times * 100, 2000);
+        },
+        ...(isTls ? { tls: { rejectUnauthorized: false } } : {}),
     });
 
     client.on("connect", () => console.log("Redis connected"));
+    client.on("ready", () => console.log("Redis ready"));
     client.on("error", (err) => {
         console.warn(`Redis error: ${err.message}`);
+    });
+    client.on("end", () => {
+        console.warn("Redis connection ended");
     });
 
     client.connect().catch((err) => {
