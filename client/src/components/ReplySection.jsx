@@ -5,10 +5,11 @@ import { replyToArgument, deleteArgument } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-export default function ReplySection({ argumentId, replies = [], onReplyAdded }) {
+export default function ReplySection({ argumentId, replies = [], onReplyAdded, parentSide = 'Pro' }) {
     const { user } = useAuth();
     const [showForm, setShowForm] = useState(false);
     const [text, setText] = useState('');
+    const [side, setSide] = useState(parentSide);
     const [loading, setLoading] = useState(false);
 
     // Submit a reply
@@ -18,12 +19,14 @@ export default function ReplySection({ argumentId, replies = [], onReplyAdded })
 
         setLoading(true);
         try {
-            await replyToArgument({ parentId: argumentId, text });
+            await replyToArgument({ parentId: argumentId, text, side });
             setText('');
+            setSide(parentSide);
             setShowForm(false);
             if (onReplyAdded) onReplyAdded();
         } catch (err) {
-            console.error('Reply failed:', err);
+            const msg = err.response?.data?.message || 'Reply failed';
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -41,6 +44,16 @@ export default function ReplySection({ argumentId, replies = [], onReplyAdded })
             console.error(err);
         }
     };
+
+    const sideBtnStyle = (s) => ({
+        padding: '0.3rem 0.75rem', borderRadius: '6px', cursor: 'pointer',
+        border: '1px solid',
+        borderColor: side === s ? (s === 'Pro' ? 'var(--pro-color)' : 'var(--con-color)') : 'var(--border)',
+        background: side === s ? (s === 'Pro' ? 'var(--pro-bg)' : 'var(--con-bg)') : 'transparent',
+        color: side === s ? (s === 'Pro' ? 'var(--pro-color)' : 'var(--con-color)') : 'var(--text-muted)',
+        fontWeight: 600, fontSize: '0.75rem',
+        transition: 'all 0.2s ease',
+    });
 
     return (
         <div style={{ marginTop: '0.75rem' }}>
@@ -60,6 +73,12 @@ export default function ReplySection({ argumentId, replies = [], onReplyAdded })
                                 <p style={{ color: 'var(--text)', lineHeight: 1.4 }}>{reply.text}</p>
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                     — {reply.author?.name || 'Unknown'} · {new Date(reply.createdAt).toLocaleDateString()}
+                                    {reply.side && (
+                                        <span className={`badge ${reply.side === 'Pro' ? 'badge-pro' : 'badge-con'}`}
+                                            style={{ marginLeft: '0.4rem', fontSize: '0.65rem' }}>
+                                            {reply.side}
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                             
@@ -96,18 +115,28 @@ export default function ReplySection({ argumentId, replies = [], onReplyAdded })
                     </button>
 
                     {showForm && (
-                        <form onSubmit={handleSubmit} style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
-                            <input
-                                className="input-field"
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                placeholder="Write a reply..."
-                                style={{ flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                            />
-                            <button type="submit" className="btn-primary" disabled={loading}
-                                style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
-                                {loading ? '...' : 'Send'}
-                            </button>
+                        <form onSubmit={handleSubmit} style={{ marginTop: '0.5rem' }}>
+                            <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.4rem' }}>
+                                <button type="button" onClick={() => setSide('Pro')} style={sideBtnStyle('Pro')}>
+                                    👍 Pro
+                                </button>
+                                <button type="button" onClick={() => setSide('Con')} style={sideBtnStyle('Con')}>
+                                    👎 Con
+                                </button>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input
+                                    className="input-field"
+                                    value={text}
+                                    onChange={(e) => setText(e.target.value)}
+                                    placeholder="Write a reply..."
+                                    style={{ flex: 1, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                                />
+                                <button type="submit" className="btn-primary" disabled={loading}
+                                    style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                                    {loading ? '...' : 'Send'}
+                                </button>
+                            </div>
                         </form>
                     )}
                 </>
