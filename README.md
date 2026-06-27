@@ -433,7 +433,16 @@ Manage users, debates, arguments and reports from one place.
 - [ ] More detailed debate analytics
 - [ ] Email verification on signup
 - [ ] OAuth login with Google and GitHub
-- [ ] Single-use refresh token rotation
+
+### Expert-Level Improvements (Future)
+
+- [ ] **Single-use refresh token rotation** — Right now the same refresh token works for 7 days. Instead, every time a refresh token is used, it should be replaced with a new one. If someone tries to reuse an old token, it means it was stolen — so the server should log out the entire session immediately. This is how production auth systems like Auth.js and Supabase work.
+
+- [ ] **Cursor-based pagination for arguments** — The current approach loads all arguments at once and builds the tree in memory. At scale this is slow. A better approach is to add a `path` field to each argument (Materialized Path pattern) that stores its full ancestry chain, then paginate top-level arguments using a cursor and lazy-load replies only when the user expands them.
+
+- [ ] **Background job queue for trending scores** — Right now `recalcTrendingScore` runs on every vote, argument, and view — that's a DB read + write on every hot request. Using BullMQ (which runs on Redis), these recalculations can be pushed to a background worker with deduplication, so the main API stays fast under load.
+
+- [ ] **Structured logging with Winston** — Currently the app uses `console.log` and Morgan, so logs are lost when the server restarts. Adding Winston with JSON-formatted logs, a unique `requestId` per request, and a remote log service (like Logtail or Datadog) would make it possible to trace and debug production issues properly.
 
 ---
 
