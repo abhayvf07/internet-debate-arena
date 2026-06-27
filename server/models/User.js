@@ -1,4 +1,4 @@
-// User schema — auth, profile, points, banning, and password hashing
+// User model
 
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
@@ -33,10 +33,6 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
             trim: true,
         },
-        token: {
-            type: String,
-            default: null,
-        },
         points: {
             type: Number,
             default: 0,
@@ -61,7 +57,6 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-userSchema.index({ email: 1 });
 userSchema.index({ points: -1 });
 
 // Hash password before saving
