@@ -1,4 +1,4 @@
-// Argument schema — debate arguments with Pro/Con sides and nested replies
+// Argument model
 
 const mongoose = require("mongoose");
 
