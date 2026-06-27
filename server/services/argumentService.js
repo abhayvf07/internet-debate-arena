@@ -1,4 +1,4 @@
-// Argument service — create, reply, like, delete arguments with real-time updates
+// Argument service
 
 const Argument = require("../models/Argument");
 const Like = require("../models/Like");
@@ -77,7 +77,7 @@ const createArgument = async ({ debateId, text, side, userId }) => {
 };
 
 // Reply to an existing argument
-const replyToArgument = async ({ parentId, text, userId }) => {
+const replyToArgument = async ({ parentId, text, side, userId }) => {
     if (!parentId || !text) {
         const error = new Error("parentId and text are required");
         error.statusCode = 400;
@@ -91,11 +91,19 @@ const replyToArgument = async ({ parentId, text, userId }) => {
         throw error;
     }
 
+    // Use provided side or default to parent's side
+    const replySide = side || parent.side;
+    if (!["Pro", "Con"].includes(replySide)) {
+        const error = new Error("Side must be Pro or Con");
+        error.statusCode = 400;
+        throw error;
+    }
+
     const reply = await Argument.create({
         debateId: parent.debateId,
         author: userId,
         text,
-        side: parent.side,
+        side: replySide,
         parentId,
     });
 
@@ -128,31 +136,46 @@ const replyToArgument = async ({ parentId, text, userId }) => {
     };
 };
 
-// Get all arguments for a debate as a nested tree
-const getArgumentsByDebate = async (debateId, userId) => {
-    const allArgs = await Argument.find({ debateId })
+// Get paginated arguments for a debate as a nested tree
+const getArgumentsByDebate = async (debateId, userId, query = {}) => {
+    const page = Math.max(1, parseInt(query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(query.limit) || 50));
+    const skip = (page - 1) * limit;
+
+    // Count total top-level arguments for pagination info
+    const totalTopLevel = await Argument.countDocuments({ debateId, parentId: null });
+
+    // Fetch paginated top-level arguments
+    const topLevelArgs = await Argument.find({ debateId, parentId: null })
         .populate("author", "name")
         .sort({ createdAt: -1 })
-        .limit(200)
+        .skip(skip)
+        .limit(limit)
         .lean();
 
+    // Fetch all replies for the fetched top-level arguments (recursively)
+    const topLevelIds = topLevelArgs.map((a) => a._id);
+    const allReplies = await Argument.find({
+        debateId,
+        parentId: { $ne: null },
+    })
+        .populate("author", "name")
+        .sort({ createdAt: 1 })
+        .lean();
+
+    // Build map and nest replies
+    const allArgs = [...topLevelArgs, ...allReplies];
     const argMap = {};
-    const topLevel = [];
 
     allArgs.forEach((arg) => {
         arg.replies = [];
         argMap[arg._id.toString()] = arg;
     });
 
-    // Nest replies under their parent
-    allArgs.forEach((arg) => {
-        if (arg.parentId) {
-            const parent = argMap[arg.parentId.toString()];
-            if (parent) {
-                parent.replies.push(arg);
-            }
-        } else {
-            topLevel.push(arg);
+    allReplies.forEach((arg) => {
+        const parent = argMap[arg.parentId?.toString()];
+        if (parent) {
+            parent.replies.push(arg);
         }
     });
 
@@ -168,7 +191,13 @@ const getArgumentsByDebate = async (debateId, userId) => {
         });
     }
 
-    return { arguments: topLevel, userLikes };
+    return {
+        arguments: topLevelArgs,
+        userLikes,
+        page,
+        totalPages: Math.ceil(totalTopLevel / limit),
+        total: totalTopLevel,
+    };
 };
 
 // Toggle like on an argument
