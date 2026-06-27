@@ -36,7 +36,8 @@ export default function ArgumentCard({ argument, liked, onLike, onReplyAdded }) 
             toast.success("Argument deleted");
             if (onReplyAdded) onReplyAdded();
         } catch (err) {
-            toast.error("Failed to delete");
+            const msg = err.response?.data?.message || 'Failed to delete';
+            toast.error(msg);
             console.error("Delete failed:", err);
         }
     };
@@ -148,6 +149,7 @@ export default function ArgumentCard({ argument, liked, onLike, onReplyAdded }) 
                 argumentId={argument._id}
                 replies={argument.replies || []}
                 onReplyAdded={onReplyAdded}
+                parentSide={argument.side}
             />
         </div>
     );
