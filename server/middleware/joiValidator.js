@@ -1,4 +1,4 @@
-// Joi validation middleware — validates request data against a schema
+// Joi validation
 
 const validate = (schema) => (req, res, next) => {
     const { error } = schema.validate({
