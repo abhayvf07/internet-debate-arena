@@ -1,66 +1,70 @@
 // Profile page — user details, debates, bookmarks, and rank
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getDebates, getBookmarks, getLeaderboard, getMe, getUserStats, uploadAvatar } from '../services/api';
 import DebateCard from '../components/DebateCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { PageSkeleton } from '../components/SkeletonLoader';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function Profile() {
     const { user, login } = useAuth();
-    const [myDebates, setMyDebates] = useState([]);
-    const [bookmarkedDebates, setBookmarkedDebates] = useState([]);
-    const [leaderboard, setLeaderboard] = useState([]);
-    const [stats, setStats] = useState({ debatesCreated: 0, argumentsPosted: 0, votesReceived: 0 });
+    const queryClient = useQueryClient();
     const [tab, setTab] = useState('debates');
-    const [loading, setLoading] = useState(true);
-    const [livePoints, setLivePoints] = useState(user?.points || 0);
-    const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const [debatesRes, bookmarksRes, leaderboardRes, meRes, statsRes] = await Promise.all([
-                    getDebates({ creator: user?._id, limit: 50 }),
-                    getBookmarks(),
-                    getLeaderboard(10),
-                    getMe(),
-                    getUserStats(),
-                ]);
-                setMyDebates(debatesRes.data.debates);
-                setBookmarkedDebates(bookmarksRes.data);
-                setLeaderboard(leaderboardRes.data);
-                setLivePoints(meRes.data.points);
-                setAvatarUrl(meRes.data.avatar || '');
-                setStats(statsRes.data);
-            } catch (err) {
-                console.error('Failed to load profile data:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [user]);
+    // Fetch all profile data with TanStack Query
+    const { data: profileData, isLoading } = useQuery({
+        queryKey: ['profile', user?._id],
+        queryFn: async () => {
+            const [debatesRes, bookmarksRes, leaderboardRes, meRes, statsRes] = await Promise.all([
+                getDebates({ creator: user?._id, limit: 50 }),
+                getBookmarks(),
+                getLeaderboard(10),
+                getMe(),
+                getUserStats(),
+            ]);
+            return {
+                myDebates: debatesRes.data.debates,
+                bookmarkedDebates: bookmarksRes.data,
+                leaderboard: leaderboardRes.data,
+                livePoints: meRes.data.points,
+                avatarUrl: meRes.data.avatar || '',
+                stats: statsRes.data,
+            };
+        },
+        enabled: !!user,
+    });
 
-    const handleAvatarUpload = async (e) => {
+    const myDebates = profileData?.myDebates ?? [];
+    const bookmarkedDebates = profileData?.bookmarkedDebates ?? [];
+    const leaderboard = profileData?.leaderboard ?? [];
+    const stats = profileData?.stats ?? { debatesCreated: 0, argumentsPosted: 0, votesReceived: 0 };
+    const livePoints = profileData?.livePoints ?? user?.points ?? 0;
+    const avatarUrl = profileData?.avatarUrl ?? user?.avatar ?? '';
+
+    // Avatar upload mutation
+    const avatarMutation = useMutation({
+        mutationFn: (formData) => uploadAvatar(formData),
+        onSuccess: (res) => {
+            login({ ...user, avatar: res.data.avatar });
+            queryClient.invalidateQueries({ queryKey: ['profile', user?._id] });
+            toast.success('Avatar updated!');
+        },
+        onError: (err) => {
+            const msg = err.response?.data?.message || 'Failed to upload avatar';
+            toast.error(msg);
+        },
+    });
+
+    const handleAvatarUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         const formData = new FormData();
         formData.append('avatar', file);
-
-        try {
-            const res = await uploadAvatar(formData);
-            setAvatarUrl(res.data.avatar);
-            login({ ...user, avatar: res.data.avatar });
-            toast.success('Avatar updated!');
-        } catch (err) {
-            toast.error('Failed to upload avatar');
-            console.error('Avatar upload failed:', err);
-        }
+        avatarMutation.mutate(formData);
     };
 
     const tabStyle = (active) => ({
@@ -77,6 +81,10 @@ export default function Profile() {
     });
 
     const userRank = leaderboard.findIndex((u) => u._id === user?._id) + 1;
+
+    if (isLoading) {
+        return <PageSkeleton />;
+    }
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem 1.5rem' }}>
@@ -107,14 +115,17 @@ export default function Profile() {
                             background: 'var(--primary)', borderRadius: '50%',
                             width: '28px', height: '28px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', fontSize: '0.8rem',
+                            cursor: avatarMutation.isPending ? 'wait' : 'pointer',
+                            fontSize: '0.8rem',
                             border: '2px solid var(--surface)',
+                            opacity: avatarMutation.isPending ? 0.6 : 1,
                         }}>
-                            📷
+                            {avatarMutation.isPending ? '⏳' : '📷'}
                             <input
                                 type="file"
                                 accept="image/*"
                                 onChange={handleAvatarUpload}
+                                disabled={avatarMutation.isPending}
                                 style={{ display: 'none' }}
                             />
                         </label>
@@ -191,89 +202,83 @@ export default function Profile() {
                 </button>
             </div>
 
-            {loading ? (
-                <LoadingSpinner text="Loading profile..." />
-            ) : (
+            {tab === 'debates' && (
                 <>
-                    {tab === 'debates' && (
-                        <>
-                            {myDebates.length === 0 ? (
-                                <div className="glass" style={{ padding: '2rem', textAlign: 'center' }}>
-                                    <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                                        You haven't created any debates yet.
-                                    </p>
-                                    <Link to="/create" className="btn-primary" style={{ textDecoration: 'none' }}>
-                                        Start Your First Debate
-                                    </Link>
-                                </div>
-                            ) : (
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                                    gap: '1rem',
-                                }}>
-                                    {myDebates.map((d) => (
-                                        <DebateCard key={d._id} debate={d} />
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {tab === 'bookmarks' && (
-                        <>
-                            {bookmarkedDebates.length === 0 ? (
-                                <div className="glass" style={{ padding: '2rem', textAlign: 'center' }}>
-                                    <p style={{ color: 'var(--text-muted)' }}>No bookmarked debates yet.</p>
-                                </div>
-                            ) : (
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                                    gap: '1rem',
-                                }}>
-                                    {bookmarkedDebates.map((d) => (
-                                        <DebateCard key={d._id} debate={d} />
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {tab === 'leaderboard' && (
-                        <div className="glass" style={{ padding: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1rem' }}>
-                                🏆 Top Debaters
-                            </h3>
-                            {leaderboard.length === 0 ? (
-                                <p style={{ color: 'var(--text-muted)' }}>No data yet.</p>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                    {leaderboard.map((u, idx) => (
-                                        <div key={u._id} style={{
-                                            display: 'flex', alignItems: 'center', gap: '1rem',
-                                            padding: '0.75rem 1rem', borderRadius: '10px',
-                                            background: u._id === user?._id ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                                            border: '1px solid',
-                                            borderColor: u._id === user?._id ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)',
-                                        }}>
-                                            <span style={{
-                                                fontSize: '1.1rem', fontWeight: 800, minWidth: '2rem',
-                                                color: idx === 0 ? '#f59e0b' : idx === 1 ? '#94a3b8' : idx === 2 ? '#cd7f32' : 'var(--text-muted)',
-                                            }}>
-                                                {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
-                                            </span>
-                                            <span style={{ flex: 1, fontWeight: 600 }}>{u.name}</span>
-                                            <span style={{ fontWeight: 700, color: 'var(--primary-light)' }}>
-                                                {u.points} pts
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                    {myDebates.length === 0 ? (
+                        <div className="glass" style={{ padding: '2rem', textAlign: 'center' }}>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                                You haven't created any debates yet.
+                            </p>
+                            <Link to="/create" className="btn-primary" style={{ textDecoration: 'none' }}>
+                                Start Your First Debate
+                            </Link>
+                        </div>
+                    ) : (
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                            gap: '1rem',
+                        }}>
+                            {myDebates.map((d) => (
+                                <DebateCard key={d._id} debate={d} />
+                            ))}
                         </div>
                     )}
                 </>
+            )}
+
+            {tab === 'bookmarks' && (
+                <>
+                    {bookmarkedDebates.length === 0 ? (
+                        <div className="glass" style={{ padding: '2rem', textAlign: 'center' }}>
+                            <p style={{ color: 'var(--text-muted)' }}>No bookmarked debates yet.</p>
+                        </div>
+                    ) : (
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                            gap: '1rem',
+                        }}>
+                            {bookmarkedDebates.map((d) => (
+                                <DebateCard key={d._id} debate={d} />
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
+
+            {tab === 'leaderboard' && (
+                <div className="glass" style={{ padding: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1rem' }}>
+                        🏆 Top Debaters
+                    </h3>
+                    {leaderboard.length === 0 ? (
+                        <p style={{ color: 'var(--text-muted)' }}>No data yet.</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {leaderboard.map((u, idx) => (
+                                <div key={u._id} style={{
+                                    display: 'flex', alignItems: 'center', gap: '1rem',
+                                    padding: '0.75rem 1rem', borderRadius: '10px',
+                                    background: u._id === user?._id ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                                    border: '1px solid',
+                                    borderColor: u._id === user?._id ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)',
+                                }}>
+                                    <span style={{
+                                        fontSize: '1.1rem', fontWeight: 800, minWidth: '2rem',
+                                        color: idx === 0 ? '#f59e0b' : idx === 1 ? '#94a3b8' : idx === 2 ? '#cd7f32' : 'var(--text-muted)',
+                                    }}>
+                                        {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
+                                    </span>
+                                    <span style={{ flex: 1, fontWeight: 600 }}>{u.name}</span>
+                                    <span style={{ fontWeight: 700, color: 'var(--primary-light)' }}>
+                                        {u.points} pts
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             )}
         </div>
     );
