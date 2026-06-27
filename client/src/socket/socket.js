@@ -5,10 +5,20 @@ import { io } from "socket.io-client";
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
 
 let socket = null;
+let currentToken = null;
 
 // Get or create socket connection
+// Reconnects if the token has changed (e.g. user logged out and back in)
 export const getSocket = (token) => {
+    // If socket is connected but token changed, disconnect and reconnect
+    if (socket?.connected && token !== currentToken) {
+        socket.disconnect();
+        socket = null;
+    }
+
     if (socket?.connected) return socket;
+
+    currentToken = token;
 
     socket = io(SOCKET_URL, {
         auth: { token },
@@ -38,6 +48,7 @@ export const disconnectSocket = () => {
     if (socket) {
         socket.disconnect();
         socket = null;
+        currentToken = null;
     }
 };
 
