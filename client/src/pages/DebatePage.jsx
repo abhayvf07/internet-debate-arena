@@ -23,6 +23,7 @@ export default function DebatePage() {
     const [newArg, setNewArg] = useState({ text: '', side: 'Pro' });
     const [bookmarked, setBookmarked] = useState(false);
     const [showAnalytics, setShowAnalytics] = useState(false);
+    const [argPage, setArgPage] = useState(1);
 
     useEffect(() => {
         const socket = getSocket(user?.accessToken || user?.token);
@@ -79,6 +80,7 @@ export default function DebatePage() {
 
     useEffect(() => {
         incrementView(id).catch(() => { });
+        queueMicrotask(() => setArgPage(1));
     }, [id]);
 
     const { data: debate, isLoading: loadingDebate } = useQuery({
@@ -90,12 +92,12 @@ export default function DebatePage() {
     });
 
     const { data: argsData, isLoading: loadingArgs } = useQuery({
-        queryKey: ['arguments', id],
+        queryKey: ['arguments', id, argPage],
         queryFn: async () => {
-            const res = await getArguments(id, user?._id);
+            const res = await getArguments(id, user?._id, argPage);
             return res.data;
         },
-        initialData: { arguments: [], userLikes: {} },
+        initialData: { arguments: [], userLikes: {}, totalPages: 1, page: 1 },
     });
 
     const addArgumentMutation = useMutation({
@@ -105,7 +107,10 @@ export default function DebatePage() {
             toast.success('Argument posted!');
             queryClient.invalidateQueries(['arguments', id]);
         },
-        onError: () => toast.error('Failed to post argument')
+        onError: (err) => {
+            const msg = err.response?.data?.message || 'Failed to post argument';
+            toast.error(msg);
+        }
     });
 
     const voteMutation = useMutation({
@@ -121,7 +126,23 @@ export default function DebatePage() {
             if (res.data.alert) toast(res.data.alert);
             else toast.success(res.data.userVoteSide ? `Voted ${res.data.userVoteSide}!` : 'Vote removed');
         },
-        onError: () => toast.error('Vote failed')
+        onError: (err) => {
+            const msg = err.response?.data?.message || 'Vote failed. Please try again.';
+            toast.error(msg);
+        }
+    });
+
+    const likeMutation = useMutation({
+        mutationFn: (argumentId) => likeArgument(argumentId),
+        onSuccess: (res) => {
+            toast.success(res.data.liked ? '❤️ Liked!' : 'Unliked');
+            if (res.data.alert) toast(res.data.alert);
+            queryClient.invalidateQueries(['arguments', id]);
+        },
+        onError: (err) => {
+            const msg = err.response?.data?.message || 'Like failed. Please try again.';
+            toast.error(msg);
+        }
     });
 
     const handleSubmitArg = (e) => {
@@ -130,17 +151,9 @@ export default function DebatePage() {
         addArgumentMutation.mutate({ debateId: id, text: newArg.text, side: newArg.side });
     };
 
-    const handleLike = async (argumentId) => {
-        try {
-            const res = await likeArgument(argumentId);
-            toast.success(res.data.liked ? '❤️ Liked!' : 'Unliked');
-            if (res.data.alert) toast(res.data.alert);
-            queryClient.invalidateQueries(['arguments', id]);
-        } catch (err) {
-            if (err.response?.status === 403) {
-                toast.error("You can't like your own argument");
-            }
-        }
+    const handleLike = (argumentId) => {
+        if (likeMutation.isPending) return;
+        likeMutation.mutate(argumentId);
     };
 
     const handleBookmark = async () => {
@@ -148,8 +161,9 @@ export default function DebatePage() {
             const res = await toggleBookmark(id);
             setBookmarked(res.data.bookmarked);
             toast.success(res.data.bookmarked ? '🔖 Bookmarked!' : 'Bookmark removed');
-        } catch {
-            toast.error('Bookmark failed');
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Bookmark failed';
+            toast.error(msg);
         }
     };
 
@@ -232,10 +246,10 @@ export default function DebatePage() {
                         display: 'flex', justifyContent: 'center', gap: '1rem',
                         marginTop: '1.25rem',
                     }}>
-                        <button style={voteBtnStyle('Pro')} onClick={() => voteMutation.mutate('Pro')}>
+                        <button style={voteBtnStyle('Pro')} onClick={() => voteMutation.mutate('Pro')} disabled={voteMutation.isPending}>
                             👍 Vote Pro ({debate.proVotes || 0})
                         </button>
-                        <button style={voteBtnStyle('Con')} onClick={() => voteMutation.mutate('Con')}>
+                        <button style={voteBtnStyle('Con')} onClick={() => voteMutation.mutate('Con')} disabled={voteMutation.isPending}>
                             👎 Vote Con ({debate.conVotes || 0})
                         </button>
                     </div>
@@ -374,6 +388,28 @@ export default function DebatePage() {
                             ))
                         )}
                     </div>
+                </div>
+            )}
+
+            {(argsData?.totalPages ?? 1) > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                    <button
+                        className="btn-secondary"
+                        onClick={() => setArgPage((p) => Math.max(1, p - 1))}
+                        disabled={argPage === 1}
+                    >
+                        ← Previous
+                    </button>
+                    <span style={{ color: 'var(--text-muted)', alignSelf: 'center' }}>
+                        Page {argPage} of {argsData?.totalPages ?? 1}
+                    </span>
+                    <button
+                        className="btn-secondary"
+                        onClick={() => setArgPage((p) => p + 1)}
+                        disabled={argPage >= (argsData?.totalPages ?? 1)}
+                    >
+                        Next →
+                    </button>
                 </div>
             )}
         </div>
