@@ -1,4 +1,4 @@
-// Argument routes — CRUD, replies, and likes with rate limiting
+// Argument routes
 
 const express = require("express");
 const rateLimit = require("express-rate-limit");
