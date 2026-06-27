@@ -9,7 +9,7 @@ const API = axios.create({
 // Attach access token to every request
 API.interceptors.request.use((config) => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const token = user?.accessToken || user?.token;
+    const token = user?.accessToken;
     
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -61,7 +61,6 @@ API.interceptors.response.use(
                 // Update stored token
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
                 user.accessToken = newAccessToken;
-                user.token = newAccessToken;
                 localStorage.setItem('user', JSON.stringify(user));
 
                 processQueue(null, newAccessToken);

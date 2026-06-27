@@ -117,6 +117,8 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 | express-mongo-sanitize | ^2.2.0 |
 | xss-clean | ^0.1.4 |
 | Morgan | ^1.10.1 |
+| Cloudinary | ^2.10.0 |
+| multer-storage-cloudinary | ^4.0.0 |
 
 ---
 
@@ -147,6 +149,7 @@ Debate Arena/
 │   │   │   └── ThemeContext.jsx
 │   │   ├── hooks/                 # Custom hooks
 │   │   │   └── useAuth.js
+│   │   │   └── useTheme.js
 │   │   ├── layouts/
 │   │   │   └── MainLayout.jsx
 │   │   ├── pages/                 # Route-level page components
@@ -276,9 +279,14 @@ JWT_SECRET=<random-256-bit-hex-string>
 JWT_REFRESH_SECRET=<another-random-256-bit-hex-string>
 CLIENT_URL=http://localhost:5173
 REDIS_URL=redis://localhost:6379
+CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
+CLOUDINARY_API_KEY=<your-cloudinary-api-key>
+CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
 ```
 
-Note: `REDIS_URL` is optional — if you leave it out the app will just run without caching, everything still works fine.
+Notes:
+- `REDIS_URL` is optional — if you leave it out the app runs without caching and degrades gracefully.
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are **required** for avatar upload to work. Get them free at [cloudinary.com](https://cloudinary.com) after creating an account.
 
 Start the backend:
 

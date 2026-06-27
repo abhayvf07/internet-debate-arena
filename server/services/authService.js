@@ -22,7 +22,6 @@ const buildUserResponse = (user, accessToken, refreshToken) => ({
     avatar: user.avatar,
     accessToken: accessToken || undefined,
     refreshToken: refreshToken || undefined,
-    token: accessToken || undefined,
 });
 
 // Register a new user
