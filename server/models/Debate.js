@@ -1,4 +1,4 @@
-// Debate schema — topics with categories, tags, vote counts, and trending score
+// Debate model
 
 const mongoose = require("mongoose");
 
