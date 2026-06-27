@@ -110,7 +110,7 @@ export const voteOnDebate = (debateId, side) => API.post(`/debates/${debateId}/v
 export const incrementView = (debateId) => API.post(`/debates/${debateId}/view`);
 
 // Arguments
-export const getArguments = (debateId, userId) => API.get(`/arguments/${debateId}`, { params: { userId } });
+export const getArguments = (debateId, userId, page = 1) => API.get(`/arguments/${debateId}`, { params: { userId, page, limit: 20 } });
 export const createArgument = (data) => API.post('/arguments', data);
 export const replyToArgument = (data) => API.post('/arguments/reply', data);
 export const likeArgument = (argumentId) => API.post('/arguments/like', { argumentId });
