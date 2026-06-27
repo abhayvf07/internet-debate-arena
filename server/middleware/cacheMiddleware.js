@@ -1,4 +1,4 @@
-// Redis cache middleware — serves cached response or caches new one with TTL
+// Cache middleware
 
 const { getCache, setCache } = require("../config/redis");
 
