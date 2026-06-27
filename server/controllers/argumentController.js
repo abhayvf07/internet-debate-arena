@@ -25,7 +25,8 @@ const replyToArgument = asyncHandler(async (req, res) => {
 const getArgumentsByDebate = asyncHandler(async (req, res) => {
     const result = await argumentService.getArgumentsByDebate(
         req.params.debateId,
-        req.query.userId
+        req.query.userId,
+        req.query
     );
     res.json(result);
 });
