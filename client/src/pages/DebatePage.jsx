@@ -329,8 +329,8 @@ export default function DebatePage() {
                                     👎 Con
                                 </button>
                             </div>
-                            <button type="submit" className="btn-primary" disabled={addArgumentMutation.isLoading}>
-                                {addArgumentMutation.isLoading ? 'Posting...' : 'Post Argument'}
+                            <button type="submit" className="btn-primary" disabled={addArgumentMutation.isPending}>
+                                {addArgumentMutation.isPending ? 'Posting...' : 'Post Argument'}
                             </button>
                         </div>
                     </form>

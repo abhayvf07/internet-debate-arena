@@ -81,7 +81,7 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 - Joi validation on all request schemas
 - Clean, well-documented codebase with uniform docstrings
 - Morgan HTTP logging + console logging
-- Multer for avatar uploads
+- Cloudinary for cloud avatar storage (via Multer middleware — auto-resized to 256×256, persisted on CDN)
 
 ---
 
@@ -189,7 +189,7 @@ Debate Arena/
     │   ├── cacheMiddleware.js     # Redis TTL cache intercept for GET routes
     │   ├── errorMiddleware.js     # Global error handler + asyncHandler wrapper
     │   ├── joiValidator.js        # Joi schema validation middleware factory
-    │   └── uploadMiddleware.js    # Multer config for avatar uploads
+    │   └── uploadMiddleware.js    # Multer + Cloudinary config for avatar uploads
     ├── models/                    # Mongoose schemas & indexes
     │   ├── Argument.js
     │   ├── Bookmark.js
@@ -222,11 +222,6 @@ Debate Arena/
     │   ├── argumentValidator.js
     │   ├── authValidator.js
     │   └── debateValidator.js
-    ├── uploads/                   # Avatar image storage (gitignored)
-    │   └── avatars/
-    ├── logs/                      # Runtime logs (gitignored)
-    │   ├── combined.log
-    │   └── error.log
     ├── .env
     ├── package.json
     └── server.js                  # Entry point — middleware stack, routes, server startup
@@ -332,6 +327,9 @@ npm run preview    # preview the production build locally
 | `JWT_REFRESH_SECRET` | Yes | Secret for signing refresh tokens (7d expiry) |
 | `CLIENT_URL` | Yes | Frontend origin for CORS |
 | `REDIS_URL` | No | Redis connection URL — leave out to disable caching |
+| `CLOUDINARY_CLOUD_NAME` | Yes | Cloudinary cloud name for avatar storage |
+| `CLOUDINARY_API_KEY` | Yes | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Yes | Cloudinary API secret |
 
 ### `client/.env`
 
@@ -387,8 +385,8 @@ You can test the app with these accounts:
 
 | Role | Email | Password |
 |------|-------|----------|
-| User | user2@test.com | Abhay@07 |
-| Admin | admin@test.com | Abhay@07 |
+| User | user@test.com | user@07 |
+| Admin | admin@test.com | admin@07 |
 
 These are just for testing — don't use these credentials in production.
 

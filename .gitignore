@@ -48,6 +48,7 @@ client/.env
 .cache/
 .tmp/
 .temp/
+.vite/
 *.swp
 *.swo
 
@@ -90,11 +91,6 @@ pids
 *.seed
 *.pid.lock
 
-# ==============================
-# Optional uploads folder
-# ==============================
-server/uploads/avatars/*
-!server/uploads/avatars/.gitkeep
 # ==============================
 # Redis / database dump files
 # ==============================
