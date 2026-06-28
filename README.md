@@ -458,12 +458,6 @@ PRs are welcome! If it's a big change, open an issue first so we can talk about 
 
 ---
 
-## License
-
-Open source. See [LICENSE](LICENSE) for details.
-
----
-
 ## Author
 
 **Abhay Fulsavange**
