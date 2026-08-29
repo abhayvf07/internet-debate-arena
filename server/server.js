@@ -1,10 +1,9 @@
 // Server startup
-
-require("dotenv").config(); 
+require("dotenv").config();
 
 // Crash if frontend URL is missing in production
-if (process.env.NODE_ENV === 'production' && !process.env.CLIENT_URL) {
-  console.error('FATAL: CLIENT_URL must be set in production');
+if (process.env.NODE_ENV === "production" && !process.env.CLIENT_URL) {
+  console.error("FATAL: CLIENT_URL must be set in production");
   process.exit(1);
 }
 
@@ -32,10 +31,12 @@ initSocket(server);
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // CORS
-app.use(cors({
+app.use(
+  cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
-}));
+  }),
+);
 
 // Sanitization
 app.use(mongoSanitize());
@@ -50,19 +51,19 @@ app.use(express.urlencoded({ extended: false }));
 
 // Rate limiters
 const authLimiter = rateLimit({
-    windowMs: 60 * 1000, 
-    max: 5,
-    message: { message: "Too many auth requests, please try again later" },
-    standardHeaders: true,
-    legacyHeaders: false,
+  windowMs: 60 * 1000,
+  max: 5,
+  message: { message: "Too many auth requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 const generalLimiter = rateLimit({
-    windowMs: 60 * 1000,
-    max: 100,
-    message: { message: "Too many requests, please try again later" },
-    standardHeaders: true,
-    legacyHeaders: false,
+  windowMs: 60 * 1000,
+  max: 100,
+  message: { message: "Too many requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Routes
@@ -76,12 +77,12 @@ app.use("/api/admin", generalLimiter, require("./routes/adminRoutes"));
 
 // Health check
 app.get("/", (req, res) => {
-    res.json({ message: "Internet Debate Arena API is running" });
+  res.json({ message: "Internet Debate Arena API is running" });
 });
 
 // 404 handler
 app.use((req, res) => {
-    res.status(404).json({ message: "Route not found" });
+  res.status(404).json({ message: "Route not found" });
 });
 
 // Error handler
@@ -98,7 +99,7 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error(error.message);
-    process.exit(1); 
+    process.exit(1);
   }
 };
 

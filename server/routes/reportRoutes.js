@@ -1,10 +1,9 @@
 // Report routes — create (user), list and resolve (admin only)
-
 const express = require("express");
 const {
-    createReport,
-    getReports,
-    resolveReport,
+  createReport,
+  getReports,
+  resolveReport,
 } = require("../controllers/bookmarkReportController");
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");

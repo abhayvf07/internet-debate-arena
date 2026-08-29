@@ -1,5 +1,4 @@
 // Debate model
-
 const mongoose = require("mongoose");
 
 const CATEGORIES = [

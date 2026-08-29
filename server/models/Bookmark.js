@@ -1,21 +1,20 @@
 // Bookmark schema — saves which debates a user bookmarked
-
 const mongoose = require("mongoose");
 
 const bookmarkSchema = new mongoose.Schema(
-    {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
-        },
-        debateId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Debate",
-            required: true,
-        },
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    { timestamps: true }
+    debateId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Debate",
+      required: true,
+    },
+  },
+  { timestamps: true },
 );
 
 // One bookmark per user per debate

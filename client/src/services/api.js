@@ -1,20 +1,19 @@
 // Axios API client with JWT auto-attach and silent token refresh
-
-import axios from 'axios';
+import axios from "axios";
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Attach access token to every request
 API.interceptors.request.use((config) => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const token = user?.accessToken;
-    
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const token = user?.accessToken;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Token refresh queue to avoid duplicate refresh calls
@@ -22,112 +21,129 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-    failedQueue.forEach((prom) => {
-        if (error) prom.reject(error);
-        else prom.resolve(token);
-    });
-    failedQueue = [];
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
 };
 
 // Auto-refresh on 401 errors
 API.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-            if (isRefreshing) {
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                }).then((token) => {
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
-                    return API(originalRequest);
-                }).catch((err) => Promise.reject(err));
-            }
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return API(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
 
-            isRefreshing = true;
+      isRefreshing = true;
 
-            try {
-                const res = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/auth/refresh-token`, 
-                    {}, 
-                    { withCredentials: true }
-                );
+      try {
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
+          {},
+          { withCredentials: true },
+        );
 
-                const newAccessToken = res.data.accessToken;
+        const newAccessToken = res.data.accessToken;
 
-                // Update stored token
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                user.accessToken = newAccessToken;
-                localStorage.setItem('user', JSON.stringify(user));
+        // Update stored token
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        user.accessToken = newAccessToken;
+        localStorage.setItem("user", JSON.stringify(user));
 
-                processQueue(null, newAccessToken);
+        processQueue(null, newAccessToken);
 
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                return API(originalRequest);
-                
-            } catch (refreshError) {
-                processQueue(refreshError, null);
-                // Refresh failed — log out
-                localStorage.removeItem('user');
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            } finally {
-                isRefreshing = false;
-            }
-        }
-
-        return Promise.reject(error);
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return API(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        // Refresh failed — log out
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
+
+    return Promise.reject(error);
+  },
 );
 
 // Auth
-export const registerUser = (data) => API.post('/auth/register', data);
-export const loginUser = (data) => API.post('/auth/login', data);
-export const logoutUser = () => API.post('/auth/logout', {}, { withCredentials: true });
-export const refreshToken = () => API.post('/auth/refresh-token', {}, { withCredentials: true });
-export const getMe = () => API.get('/auth/me');
-export const getUserStats = () => API.get('/auth/stats');
+export const registerUser = (data) => API.post("/auth/register", data);
+export const loginUser = (data) => API.post("/auth/login", data);
+export const logoutUser = () =>
+  API.post("/auth/logout", {}, { withCredentials: true });
+export const refreshToken = () =>
+  API.post("/auth/refresh-token", {}, { withCredentials: true });
+export const getMe = () => API.get("/auth/me");
+export const getUserStats = () => API.get("/auth/stats");
 export const uploadAvatar = (formData) =>
-    API.put('/auth/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  API.put("/auth/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
 // Users
-export const getLeaderboard = (limit) => API.get('/users/leaderboard', { params: { limit } });
+export const getLeaderboard = (limit) =>
+  API.get("/users/leaderboard", { params: { limit } });
 
 // Debates
-export const getDebates = (params) => API.get('/debates', { params });
-export const searchDebates = (params) => API.get('/debates/search', { params });
-export const getTrendingDebates = (limit) => API.get('/debates/trending', { params: { limit } });
-export const getDebateById = (id, userId) => API.get(`/debates/${id}`, { params: { userId } });
-export const createDebate = (data) => API.post('/debates', data);
+export const getDebates = (params) => API.get("/debates", { params });
+export const getMyDebates = (params) => API.get("/debates/me", { params });
+export const searchDebates = (params) => API.get("/debates/search", { params });
+export const getTrendingDebates = (limit) =>
+  API.get("/debates/trending", { params: { limit } });
+export const getDebateById = (id, userId) =>
+  API.get(`/debates/${id}`, { params: { userId } });
+export const createDebate = (data) => API.post("/debates", data);
 export const deleteDebate = (id) => API.delete(`/debates/${id}`);
-export const voteOnDebate = (debateId, side) => API.post(`/debates/${debateId}/vote`, { side });
-export const incrementView = (debateId) => API.post(`/debates/${debateId}/view`);
+export const voteOnDebate = (debateId, side) =>
+  API.post(`/debates/${debateId}/vote`, { side });
+export const incrementView = (debateId) =>
+  API.post(`/debates/${debateId}/view`);
 
 // Arguments
-export const getArguments = (debateId, userId, page = 1) => API.get(`/arguments/${debateId}`, { params: { userId, page, limit: 20 } });
-export const createArgument = (data) => API.post('/arguments', data);
-export const replyToArgument = (data) => API.post('/arguments/reply', data);
-export const likeArgument = (argumentId) => API.post('/arguments/like', { argumentId });
-export const deleteArgument = (argumentId) => API.delete(`/arguments/${argumentId}`);
+export const getArguments = (debateId, userId, page = 1) =>
+  API.get(`/arguments/${debateId}`, { params: { userId, page, limit: 20 } });
+export const createArgument = (data) => API.post("/arguments", data);
+export const replyToArgument = (data) => API.post("/arguments/reply", data);
+export const likeArgument = (argumentId) =>
+  API.post("/arguments/like", { argumentId });
+export const deleteArgument = (argumentId) =>
+  API.delete(`/arguments/${argumentId}`);
 
 // Bookmarks
-export const toggleBookmark = (debateId) => API.post('/bookmarks', { debateId });
-export const getBookmarks = () => API.get('/bookmarks');
+export const toggleBookmark = (debateId) =>
+  API.post("/bookmarks", { debateId });
+export const getBookmarks = () => API.get("/bookmarks");
 
 // Reports
-export const reportArgument = (data) => API.post('/reports', data);
-export const getReports = () => API.get('/reports');
+export const reportArgument = (data) => API.post("/reports", data);
+export const getReports = () => API.get("/reports");
 export const resolveReport = (id) => API.patch(`/reports/${id}`);
 
 // Admin
-export const adminGetUsers = (params) => API.get('/admin/users', { params });
+export const adminGetUsers = (params) => API.get("/admin/users", { params });
 export const adminDeleteDebate = (id) => API.delete(`/admin/debate/${id}`);
 export const adminDeleteArgument = (id) => API.delete(`/admin/argument/${id}`);
-export const adminGetReports = () => API.get('/admin/reports');
-export const adminBanUser = (id) => API.patch(`/admin/users/${id}/ban`);
-export const adminGetStats = () => API.get('/admin/stats');
+export const adminGetReports = (params) =>
+  API.get("/admin/reports", { params });
+export const adminBanUser = (id, reason) =>
+  API.patch(`/admin/users/${id}/ban`, { reason });
+export const adminGetStats = () => API.get("/admin/stats");
+export const adminChangeUserRole = (id, role) =>
+  API.patch(`/admin/users/${id}/role`, { role });

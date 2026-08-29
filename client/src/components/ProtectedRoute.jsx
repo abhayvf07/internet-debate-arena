@@ -1,18 +1,17 @@
 // Route guard — redirects to login if not authenticated, home if not admin
-
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children, adminOnly = false }) {
-    const { user } = useAuth();
+  const { user } = useAuth();
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-    if (adminOnly && user.role !== 'admin') {
-        return <Navigate to="/" replace />;
-    }
+  if (adminOnly && user.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
 
-    return children;
+  return children;
 }

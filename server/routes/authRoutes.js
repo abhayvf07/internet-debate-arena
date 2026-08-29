@@ -1,17 +1,22 @@
 // Auth routes — register, login, token refresh, profile, avatar
-
 const express = require("express");
 const router = express.Router();
 
 const {
-    register, login, refreshToken, logout, getMe, getUserStats, updateAvatar,
+  register,
+  login,
+  refreshToken,
+  logout,
+  getMe,
+  getUserStats,
+  updateAvatar,
 } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
 const { validate } = require("../middleware/joiValidator");
 const {
-    registerValidator,
-    loginValidator,
+  registerValidator,
+  loginValidator,
 } = require("../validators/authValidator");
 
 router.post("/register", validate(registerValidator), register);

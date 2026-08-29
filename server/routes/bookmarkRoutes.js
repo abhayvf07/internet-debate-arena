@@ -1,9 +1,8 @@
 // Bookmark routes — toggle and list bookmarks (auth required)
-
 const express = require("express");
 const {
-    toggleBookmark,
-    getBookmarks,
+  toggleBookmark,
+  getBookmarks,
 } = require("../controllers/bookmarkReportController");
 const { protect } = require("../middleware/authMiddleware");
 

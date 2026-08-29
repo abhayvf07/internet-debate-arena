@@ -1,38 +1,37 @@
 // Reusable pagination helper for Mongoose queries
-
 const paginate = async (model, filter = {}, query = {}, options = {}) => {
-    const page = Math.max(1, parseInt(query.page) || 1);
-    const maxLimit = options.maxLimit || 50;
-    const limit = Math.min(maxLimit, Math.max(1, parseInt(query.limit) || 10));
-    const skip = (page - 1) * limit;
+  const page = Math.max(1, parseInt(query.page) || 1);
+  const maxLimit = options.maxLimit || 50;
+  const limit = Math.min(maxLimit, Math.max(1, parseInt(query.limit) || 10));
+  const skip = (page - 1) * limit;
 
-    let dbQuery = model.find(filter);
+  let dbQuery = model.find(filter);
 
-    if (options.populate) {
-        dbQuery = dbQuery.populate(options.populate);
-    }
-    if (options.select) {
-        dbQuery = dbQuery.select(options.select);
-    }
+  if (options.populate) {
+    dbQuery = dbQuery.populate(options.populate);
+  }
+  if (options.select) {
+    dbQuery = dbQuery.select(options.select);
+  }
 
-    const sort = options.sort || { createdAt: -1 };
-    dbQuery = dbQuery.sort(sort).skip(skip).limit(limit);
+  const sort = options.sort || { createdAt: -1 };
+  dbQuery = dbQuery.sort(sort).skip(skip).limit(limit);
 
-    if (options.lean !== false) {
-        dbQuery = dbQuery.lean();
-    }
+  if (options.lean !== false) {
+    dbQuery = dbQuery.lean();
+  }
 
-    const [results, total] = await Promise.all([
-        dbQuery,
-        model.countDocuments(filter),
-    ]);
+  const [results, total] = await Promise.all([
+    dbQuery,
+    model.countDocuments(filter),
+  ]);
 
-    return {
-        results,
-        page,
-        totalPages: Math.ceil(total / limit),
-        total,
-    };
+  return {
+    results,
+    page,
+    totalPages: Math.ceil(total / limit),
+    total,
+  };
 };
 
 module.exports = { paginate };

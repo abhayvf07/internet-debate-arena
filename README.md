@@ -6,9 +6,9 @@ A full-stack debate platform I built using the MERN stack where users can create
 
 ## 🔗 Live Demo
 
-| | Link |
-|---|---|
-| **Frontend** | [https://internet-debate-arena.vercel.app](https://internet-debate-arena.vercel.app) |
+|                 | Link                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| **Frontend**    | [https://internet-debate-arena.vercel.app](https://internet-debate-arena.vercel.app)     |
 | **Backend API** | [https://internet-debate-arena.onrender.com](https://internet-debate-arena.onrender.com) |
 
 ---
@@ -35,12 +35,14 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 ## Features
 
 ### Authentication
+
 - Register and login
 - Passwords hashed with bcryptjs
 - JWT access tokens (JSON body) + refresh tokens (secure HttpOnly cookies)
 - Protected routes on both client and server side
 
 ### Debate System
+
 - Create debates with title, description, category and tags
 - Join on Pro or Con side
 - Vote with toggle support — you can switch sides or remove your vote
@@ -49,12 +51,14 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 - Trending score auto-calculated from votes, arguments, views and how old the debate is
 
 ### Arguments & Discussions
+
 - Post arguments under any debate (Pro or Con)
 - Reply to arguments — supports nested threaded structure
 - Real-time updates — new arguments and vote changes broadcast instantly via Socket.io
 - Like arguments — authors earn points for every like they receive
 
 ### User Features
+
 - Bookmark debates to read later
 - Like / unlike arguments
 - Report inappropriate arguments
@@ -62,6 +66,7 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 - Points-based leaderboard
 
 ### Admin Features
+
 - View and manage all users with pagination
 - Ban or unban users (invalidates their sessions automatically)
 - Deep recursive cascade cleanup for deleted arguments (ensures no orphaned replies, likes, or reports are left behind)
@@ -69,6 +74,7 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 - Admin dashboard with platform-wide stats
 
 ### Performance & Security
+
 - Strict environment variable validation at startup to prevent silent security downgrades
 - Redis caching with TTL — auto-invalidated on writes
 - App degrades gracefully if Redis is unavailable
@@ -88,37 +94,39 @@ Beyond the idea itself, this project pushed me to learn a lot of things I hadn't
 ## Tech Stack
 
 ### Frontend
-| Technology | Version |
-|---|---|
-| React | ^19.2.0 |
-| Vite | ^7.3.1 |
-| React Router DOM | ^7.13.1 |
-| TanStack React Query | ^5.90.21 |
-| Axios | ^1.13.6 |
-| Socket.io Client | ^4.8.3 |
-| Tailwind CSS | ^4.2.1 |
+
+| Technology                 | Version         |
+| -------------------------- | --------------- |
+| React                      | ^19.2.0         |
+| Vite                       | ^7.3.1          |
+| React Router DOM           | ^7.13.1         |
+| TanStack React Query       | ^5.90.21        |
+| Axios                      | ^1.13.6         |
+| Socket.io Client           | ^4.8.3          |
+| Tailwind CSS               | ^4.2.1          |
 | Chart.js + react-chartjs-2 | ^4.5.1 / ^5.3.1 |
-| React Hot Toast | ^2.6.0 |
+| React Hot Toast            | ^2.6.0          |
 
 ### Backend
-| Technology | Version |
-|---|---|
-| Node.js | LTS (v18+) |
-| Express.js | ^4.21.0 |
-| MongoDB + Mongoose | ^8.6.0 |
-| Socket.io | ^4.8.3 |
-| ioredis | ^5.10.0 |
-| JWT (jsonwebtoken) | ^9.0.2 |
-| bcryptjs | ^2.4.3 |
-| Multer | ^2.1.1 |
-| Joi | ^18.0.2 |
-| Helmet | ^8.1.0 |
-| express-rate-limit | ^8.3.1 |
-| express-mongo-sanitize | ^2.2.0 |
-| xss-clean | ^0.1.4 |
-| Morgan | ^1.10.1 |
-| Cloudinary | ^2.10.0 |
-| multer-storage-cloudinary | ^4.0.0 |
+
+| Technology                | Version    |
+| ------------------------- | ---------- |
+| Node.js                   | LTS (v18+) |
+| Express.js                | ^4.21.0    |
+| MongoDB + Mongoose        | ^8.6.0     |
+| Socket.io                 | ^4.8.3     |
+| ioredis                   | ^5.10.0    |
+| JWT (jsonwebtoken)        | ^9.0.2     |
+| bcryptjs                  | ^2.4.3     |
+| Multer                    | ^2.1.1     |
+| Joi                       | ^18.0.2    |
+| Helmet                    | ^8.1.0     |
+| express-rate-limit        | ^8.3.1     |
+| express-mongo-sanitize    | ^2.2.0     |
+| xss-clean                 | ^0.1.4     |
+| Morgan                    | ^1.10.1    |
+| Cloudinary                | ^2.10.0    |
+| multer-storage-cloudinary | ^4.0.0     |
 
 ---
 
@@ -248,6 +256,7 @@ When designing this platform, I wanted to go beyond a basic CRUD app and build s
 ## Getting Started
 
 ### What you need installed
+
 - Node.js v18+
 - MongoDB (local or MongoDB Atlas)
 - Redis (local or Upstash free tier — optional but recommended)
@@ -285,6 +294,7 @@ CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
 ```
 
 Notes:
+
 - `REDIS_URL` is optional — if you leave it out the app runs without caching and degrades gracefully.
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are **required** for avatar upload to work. Get them free at [cloudinary.com](https://cloudinary.com) after creating an account.
 
@@ -327,61 +337,61 @@ npm run preview    # preview the production build locally
 
 ### `server/.env`
 
-| Variable | Required | Description |
-|---|---|---|
-| `PORT` | No | Server port (default: 5000) |
-| `MONGO_URI` | Yes | MongoDB Atlas or local connection string |
-| `JWT_SECRET` | Yes | Secret for signing access tokens (15m expiry) |
-| `JWT_REFRESH_SECRET` | Yes | Secret for signing refresh tokens (7d expiry) |
-| `CLIENT_URL` | Yes | Frontend origin for CORS |
-| `REDIS_URL` | No | Redis connection URL — leave out to disable caching |
-| `CLOUDINARY_CLOUD_NAME` | Yes | Cloudinary cloud name for avatar storage |
-| `CLOUDINARY_API_KEY` | Yes | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Yes | Cloudinary API secret |
+| Variable                | Required | Description                                         |
+| ----------------------- | -------- | --------------------------------------------------- |
+| `PORT`                  | No       | Server port (default: 5000)                         |
+| `MONGO_URI`             | Yes      | MongoDB Atlas or local connection string            |
+| `JWT_SECRET`            | Yes      | Secret for signing access tokens (15m expiry)       |
+| `JWT_REFRESH_SECRET`    | Yes      | Secret for signing refresh tokens (7d expiry)       |
+| `CLIENT_URL`            | Yes      | Frontend origin for CORS                            |
+| `REDIS_URL`             | No       | Redis connection URL — leave out to disable caching |
+| `CLOUDINARY_CLOUD_NAME` | Yes      | Cloudinary cloud name for avatar storage            |
+| `CLOUDINARY_API_KEY`    | Yes      | Cloudinary API key                                  |
+| `CLOUDINARY_API_SECRET` | Yes      | Cloudinary API secret                               |
 
 ### `client/.env`
 
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_API_URL` | Yes | Backend REST API base URL |
-| `VITE_SOCKET_URL` | Yes | Backend Socket.io URL |
+| Variable          | Required | Description               |
+| ----------------- | -------- | ------------------------- |
+| `VITE_API_URL`    | Yes      | Backend REST API base URL |
+| `VITE_SOCKET_URL` | Yes      | Backend Socket.io URL     |
 
 ---
 
 ## API Overview
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register` | No | Register new user |
-| POST | `/api/auth/login` | No | Login and get tokens |
-| POST | `/api/auth/logout` | No | Logout and clear HttpOnly cookie |
-| POST | `/api/auth/refresh-token` | No | Get new access token using refresh token |
-| GET | `/api/auth/me` | Yes | Get current user profile |
-| GET | `/api/auth/stats` | Yes | Get user contribution stats |
-| PUT | `/api/auth/avatar` | Yes | Upload or update profile avatar |
-| GET | `/api/users/leaderboard` | No | Get top users by points |
-| GET | `/api/debates` | No | List debates with filters and pagination |
-| GET | `/api/debates/search` | No | Full-text search |
-| GET | `/api/debates/trending` | No | Get trending debates |
-| POST | `/api/debates` | Yes | Create a new debate |
-| GET | `/api/debates/:id` | No | Get a single debate with vote counts |
-| DELETE | `/api/debates/:id` | Yes | Delete debate (creator or admin only) |
-| POST | `/api/debates/:id/vote` | Yes | Vote Pro or Con — toggle supported |
-| POST | `/api/debates/:id/view` | No | Increment view count |
-| GET | `/api/arguments/:debateId` | No | Get all arguments as nested tree |
-| POST | `/api/arguments` | Yes | Post a new argument |
-| POST | `/api/arguments/reply` | Yes | Reply to an argument |
-| POST | `/api/arguments/like` | Yes | Like or unlike an argument |
-| DELETE | `/api/arguments/:id` | Yes | Delete argument (author or admin) |
-| GET | `/api/bookmarks` | Yes | Get bookmarked debates |
-| POST | `/api/bookmarks` | Yes | Toggle bookmark on a debate |
-| POST | `/api/reports` | Yes | Report an argument |
-| GET | `/api/admin/users` | Admin | List all users paginated |
-| GET | `/api/admin/stats` | Admin | Platform-wide stats |
-| GET | `/api/admin/reports` | Admin | View pending reports |
-| PATCH | `/api/admin/users/:id/ban` | Admin | Ban or unban a user |
-| DELETE | `/api/admin/debate/:id` | Admin | Delete any debate with cascade |
-| DELETE | `/api/admin/argument/:id` | Admin | Delete any argument with cascade |
+| Method | Endpoint                   | Auth  | Description                              |
+| ------ | -------------------------- | ----- | ---------------------------------------- |
+| POST   | `/api/auth/register`       | No    | Register new user                        |
+| POST   | `/api/auth/login`          | No    | Login and get tokens                     |
+| POST   | `/api/auth/logout`         | No    | Logout and clear HttpOnly cookie         |
+| POST   | `/api/auth/refresh-token`  | No    | Get new access token using refresh token |
+| GET    | `/api/auth/me`             | Yes   | Get current user profile                 |
+| GET    | `/api/auth/stats`          | Yes   | Get user contribution stats              |
+| PUT    | `/api/auth/avatar`         | Yes   | Upload or update profile avatar          |
+| GET    | `/api/users/leaderboard`   | No    | Get top users by points                  |
+| GET    | `/api/debates`             | No    | List debates with filters and pagination |
+| GET    | `/api/debates/search`      | No    | Full-text search                         |
+| GET    | `/api/debates/trending`    | No    | Get trending debates                     |
+| POST   | `/api/debates`             | Yes   | Create a new debate                      |
+| GET    | `/api/debates/:id`         | No    | Get a single debate with vote counts     |
+| DELETE | `/api/debates/:id`         | Yes   | Delete debate (creator or admin only)    |
+| POST   | `/api/debates/:id/vote`    | Yes   | Vote Pro or Con — toggle supported       |
+| POST   | `/api/debates/:id/view`    | No    | Increment view count                     |
+| GET    | `/api/arguments/:debateId` | No    | Get all arguments as nested tree         |
+| POST   | `/api/arguments`           | Yes   | Post a new argument                      |
+| POST   | `/api/arguments/reply`     | Yes   | Reply to an argument                     |
+| POST   | `/api/arguments/like`      | Yes   | Like or unlike an argument               |
+| DELETE | `/api/arguments/:id`       | Yes   | Delete argument (author or admin)        |
+| GET    | `/api/bookmarks`           | Yes   | Get bookmarked debates                   |
+| POST   | `/api/bookmarks`           | Yes   | Toggle bookmark on a debate              |
+| POST   | `/api/reports`             | Yes   | Report an argument                       |
+| GET    | `/api/admin/users`         | Admin | List all users paginated                 |
+| GET    | `/api/admin/stats`         | Admin | Platform-wide stats                      |
+| GET    | `/api/admin/reports`       | Admin | View pending reports                     |
+| PATCH  | `/api/admin/users/:id/ban` | Admin | Ban or unban a user                      |
+| DELETE | `/api/admin/debate/:id`    | Admin | Delete any debate with cascade           |
+| DELETE | `/api/admin/argument/:id`  | Admin | Delete any argument with cascade         |
 
 All endpoints are rate-limited. Auth: 5 req/min. Votes/likes: 50 req/min. General: 100 req/min.
 
@@ -391,9 +401,9 @@ All endpoints are rate-limited. Auth: 5 req/min. Votes/likes: 50 req/min. Genera
 
 You can test the app with these accounts:
 
-| Role | Email | Password |
-|------|-------|----------|
-| User | user@test.com | user@07 |
+| Role  | Email          | Password |
+| ----- | -------------- | -------- |
+| User  | user@test.com  | user@07  |
 | Admin | admin@test.com | admin@07 |
 
 These are just for testing — don't use these credentials in production.
@@ -403,28 +413,35 @@ These are just for testing — don't use these credentials in production.
 ## Screenshots
 
 ### Home Page
+
 Shows trending debates, categories and latest discussions.
 <img width="1920" height="923" alt="Home Page" src="screenshots/Home_Page.png" />
 
 ### Sign Up
+
 <img width="1920" height="919" alt="Sign Up" src="screenshots/Sign_Up.png" />
 
 ### Login
+
 <img width="1920" height="919" alt="Login" src="screenshots/Login.png" />
 
 ### Create Debate
+
 Pick your topic, write a description, choose Pro/Con framing.
 <img width="1920" height="923" alt="Create Debate" src="screenshots/Create_Debate.png" />
 
 ### Leaderboard
+
 Top contributors ranked by activity and engagement.
 <img width="1920" height="910" alt="Leaderboard" src="screenshots/Leaderboard.png" />
 
 ### User Profile
+
 Shows your debate history, arguments posted and contribution stats.
 <img width="1920" height="904" alt="User Profile" src="screenshots/User_Portfolio.png" />
 
 ### Admin Dashboard
+
 Manage users, debates, arguments and reports from one place.
 <img width="1920" height="929" alt="Admin Dashboard" src="screenshots/Admin_Dashboard.png" />
 

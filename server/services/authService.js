@@ -1,160 +1,192 @@
 // Auth service
-
 const User = require("../models/User");
 const Debate = require("../models/Debate");
 const Argument = require("../models/Argument");
 const Vote = require("../models/Vote");
 const crypto = require("crypto");
-const { generateAccessToken, generateRefreshToken } = require("../utils/generateTokens");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../utils/generateTokens");
 
 // Hash token with SHA-256 before storing in DB
 const hashToken = (token) => {
-    return crypto.createHash("sha256").update(token).digest("hex");
+  return crypto.createHash("sha256").update(token).digest("hex");
 };
 
 // Build the user response object sent to frontend
 const buildUserResponse = (user, accessToken, refreshToken) => ({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    points: user.points,
-    avatar: user.avatar,
-    accessToken: accessToken || undefined,
-    refreshToken: refreshToken || undefined,
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  points: user.points,
+  avatar: user.avatar,
+  accessToken: accessToken || undefined,
+  refreshToken: refreshToken || undefined,
 });
 
 // Register a new user
 const registerUser = async ({ name, email, password }) => {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        const error = new Error("User already exists");
-        error.statusCode = 400;
-        throw error;
-    }
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    const error = new Error("User already exists");
+    error.statusCode = 400;
+    throw error;
+  }
 
-    const user = await User.create({ name, email, password });
+  const user = await User.create({ name, email, password });
 
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
 
-    user.refreshToken = hashToken(refreshToken);
-    await user.save();
+  user.refreshToken = hashToken(refreshToken);
+  await user.save();
 
-    return buildUserResponse(user, accessToken, refreshToken);
+  return buildUserResponse(user, accessToken, refreshToken);
 };
 
 // Login user
 const loginUser = async ({ email, password }) => {
-    const user = await User.findOne({ email }).select("+password");
-    if (!user || !(await user.matchPassword(password))) {
-        const error = new Error("Invalid email or password");
-        error.statusCode = 401;
-        throw error;
-    }
+  const user = await User.findOne({ email }).select("+password");
+  if (!user || !(await user.matchPassword(password))) {
+    const error = new Error("Invalid email or password");
+    error.statusCode = 401;
+    throw error;
+  }
 
-    if (user.isBanned) {
-        const error = new Error("Your account has been banned");
-        error.statusCode = 403;
-        throw error;
-    }
+  if (user.isBanned) {
+    const error = new Error("Your account has been banned");
+    error.statusCode = 403;
+    throw error;
+  }
 
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
 
-    user.refreshToken = hashToken(refreshToken);
-    await user.save();
+  user.refreshToken = hashToken(refreshToken);
+  await user.save();
 
-    return buildUserResponse(user, accessToken, refreshToken);
+  return buildUserResponse(user, accessToken, refreshToken);
 };
 
 // Swap a valid refresh token for a new access token
 const refreshAccessToken = async (token) => {
-    const jwt = require("jsonwebtoken");
+  const jwt = require("jsonwebtoken");
 
-    let decoded;
-    try {
-        decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-    } catch {
-        const error = new Error("Invalid or expired refresh token");
-        error.statusCode = 401;
-        throw error;
-    }
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+  } catch {
+    const error = new Error("Invalid or expired refresh token");
+    error.statusCode = 401;
+    throw error;
+  }
 
-    const user = await User.findById(decoded.id);
-    if (!user) {
-        const error = new Error("User not found");
-        error.statusCode = 404;
-        throw error;
-    }
+  const user = await User.findById(decoded.id);
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
 
-    // Verify token matches what's stored in DB
-    const hashedToken = hashToken(token);
-    if (user.refreshToken !== hashedToken) {
-        const error = new Error("Refresh token mismatch");
-        error.statusCode = 401;
-        throw error;
-    }
+  // Verify token matches what's stored in DB
+  const hashedToken = hashToken(token);
+  if (user.refreshToken !== hashedToken) {
+    const error = new Error("Refresh token mismatch");
+    error.statusCode = 401;
+    throw error;
+  }
 
-    if (user.isBanned) {
-        const error = new Error("Your account has been banned");
-        error.statusCode = 403;
-        throw error;
-    }
+  if (user.isBanned) {
+    const error = new Error("Your account has been banned");
+    error.statusCode = 403;
+    throw error;
+  }
 
-    const newAccessToken = generateAccessToken(user._id);
-    return { accessToken: newAccessToken };
+  const newAccessToken = generateAccessToken(user._id);
+  return { accessToken: newAccessToken };
 };
 
 // Get current user profile
 const getMe = async (userId) => {
-    return User.findById(userId).select("-password -refreshToken");
+  return User.findById(userId).select("-password -refreshToken");
 };
 
 // Get user activity stats
 const getUserStats = async (userId) => {
-    const [debatesCreated, argumentsPosted, votesReceived] = await Promise.all([
-        Debate.countDocuments({ creator: userId }),
-        Argument.countDocuments({ author: userId }),
-        (async () => {
-            const userDebateIds = await Debate.find({ creator: userId }).distinct("_id");
-            return Vote.countDocuments({ debateId: { $in: userDebateIds } });
-        })(),
-    ]);
+  const [debatesCreated, argumentsPosted, votesReceived] = await Promise.all([
+    Debate.countDocuments({ creator: userId }),
+    Argument.countDocuments({ author: userId }),
+    (async () => {
+      const userDebateIds = await Debate.find({ creator: userId }).distinct(
+        "_id",
+      );
+      return Vote.countDocuments({ debateId: { $in: userDebateIds } });
+    })(),
+  ]);
 
-    return { debatesCreated, argumentsPosted, votesReceived };
+  return { debatesCreated, argumentsPosted, votesReceived };
 };
 
 // Update user avatar (Cloudinary returns full URL in file.path)
 const updateAvatar = async (userId, file) => {
-    if (!file) {
-        const error = new Error("Please upload an image file");
-        error.statusCode = 400;
-        throw error;
-    }
+  if (!file) {
+    const error = new Error("Please upload an image file");
+    error.statusCode = 400;
+    throw error;
+  }
 
-    const avatarUrl = file.path;
-    return User.findByIdAndUpdate(
-        userId,
-        { avatar: avatarUrl },
-        { new: true }
-    ).select("-password -refreshToken");
+  const avatarUrl = file.path;
+  return User.findByIdAndUpdate(
+    userId,
+    { avatar: avatarUrl },
+    { new: true },
+  ).select("-password -refreshToken");
 };
 
-// Get top users by points
+// Get top users by points, enriched with debate and vote counts
 const getLeaderboard = async (limit = 20) => {
-    return User.find({ isBanned: { $ne: true } })
-        .select("name points role createdAt avatar")
-        .sort({ points: -1 })
-        .limit(limit);
+  const users = await User.find({ isBanned: { $ne: true } })
+    .select("name points role createdAt avatar")
+    .sort({ points: -1 })
+    .limit(limit)
+    .lean();
+
+  // Enrich with debate and vote counts via aggregation
+  const userIds = users.map((u) => u._id);
+
+  const [debateCounts, voteCounts] = await Promise.all([
+    Debate.aggregate([
+      { $match: { creator: { $in: userIds } } },
+      { $group: { _id: "$creator", count: { $sum: 1 } } },
+    ]),
+    Vote.aggregate([
+      { $match: { userId: { $in: userIds } } },
+      { $group: { _id: "$userId", count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const debateMap = Object.fromEntries(
+    debateCounts.map((d) => [d._id.toString(), d.count]),
+  );
+  const voteMap = Object.fromEntries(
+    voteCounts.map((v) => [v._id.toString(), v.count]),
+  );
+
+  return users.map((u) => ({
+    ...u,
+    debatesCreated: debateMap[u._id.toString()] || 0,
+    totalVotes: voteMap[u._id.toString()] || 0,
+  }));
 };
 
 module.exports = {
-    registerUser,
-    loginUser,
-    refreshAccessToken,
-    getMe,
-    getUserStats,
-    updateAvatar,
-    getLeaderboard,
+  registerUser,
+  loginUser,
+  refreshAccessToken,
+  getMe,
+  getUserStats,
+  updateAvatar,
+  getLeaderboard,
 };
